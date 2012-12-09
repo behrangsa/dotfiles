@@ -1,0 +1,21 @@
+#!/bin/bash
+
+#
+# Overwrite any existing ~/.bash_profile with a symlink from the dotfiles project.
+#
+cp ~/.bash_profile ~/.bash_profile.old
+rm ~/.bash_profile
+ln -s ~/bin/dotfiles/dot_bash_profile ~/.bash_profile
+
+#
+# Overwrite any existing ~/.bashrc with the dot_bashrc from the dotfiles project.
+#
+cp ~/.bashrc ~/.bashrc.old
+rm ~/.bashrc
+cp ~/bin/dotfiles/dot_bashrc ~/.bashrc
+
+#
+# Install vcprompt (https://github.com/djl/vcprompt)
+#
+curl -sL https://github.com/djl/vcprompt/raw/master/bin/vcprompt > ~/bin/vcprompt
+
