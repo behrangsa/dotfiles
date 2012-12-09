@@ -18,4 +18,4 @@ cp ~/bin/dotfiles/dot_bashrc ~/.bashrc
 # Install vcprompt (https://github.com/djl/vcprompt)
 #
 curl -sL https://github.com/djl/vcprompt/raw/master/bin/vcprompt > ~/bin/vcprompt
-
+chmod 755 ~/bin/vcprompt
