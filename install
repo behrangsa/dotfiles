@@ -35,3 +35,9 @@ ln -s ~/bin/dotfiles/bashrc ~/.bashrc
 #
 curl -sL https://github.com/djl/vcprompt/raw/master/bin/vcprompt > ~/bin/vcprompt
 chmod 755 ~/bin/vcprompt
+
+#
+# Git
+#
+git config --global user.name "Behrang Saeedzadeh"    
+git config --global user.email behrangsa@gmail.com
