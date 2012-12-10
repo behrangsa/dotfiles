@@ -3,16 +3,32 @@
 #
 # Overwrite any existing ~/.bash_profile with a symlink from the dotfiles project.
 #
-cp ~/.bash_profile ~/.bash_profile.old
-rm ~/.bash_profile
-ln -s ~/bin/dotfiles/dot_bash_profile ~/.bash_profile
+if [ -f ~/.bash_profile ]
+then
+	cp ~/.bash_profile ~/.bash_profile.old
+	rm ~/.bash_profile
+fi
+
+ln -s ~/bin/dotfiles/bash_profile ~/.bash_profile
+
+#
+# Get rid of ~/.profile
+#
+if [ -f ~/.profile ]
+then
+	mv ~/.profile ~/.profile.old
+fi
 
 #
 # Overwrite any existing ~/.bashrc with the dot_bashrc from the dotfiles project.
 #
-cp ~/.bashrc ~/.bashrc.old
-rm ~/.bashrc
-cp ~/bin/dotfiles/dot_bashrc ~/.bashrc
+if [ -f ~/.bashrc ]
+then
+	cp ~/.bashrc ~/.bashrc.old
+	rm ~/.bashrc
+fi
+
+ln -s ~/bin/dotfiles/bashrc ~/.bashrc
 
 #
 # Install vcprompt (https://github.com/djl/vcprompt)

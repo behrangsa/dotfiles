@@ -1,13 +1,17 @@
-export EDITOR="mate -w"
 export JAVA_HOME=`/usr/libexec/java_home`
 
 #
-# user/bin
+# ~/bin and 
+# /usr/local/bin
 #
-export PATH=$PATH:~/bin
+export PATH=$PATH:~/bin:/usr/local/bin
 
 #
 # MacPorts
 #
 export PATH=/opt/local/bin:/opt/local/sbin:$PATH
 
+#
+# RVM
+#
+PATH=$PATH:$HOME/.rvm/bin
