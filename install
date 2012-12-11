@@ -29,6 +29,16 @@ fi
 ln -s ~/bin/dotfiles/bashrc ~/.bashrc
 
 #
+# ~/.gemrc
+#
+if [ -f ~/.gemrc ]
+then
+	mv ~/.gemrc ~/.gemrc.old	
+fi
+
+ln -s ~/bin/dotfiles/gemrc ~/.gemrc
+
+#
 # Install vcprompt (https://github.com/djl/vcprompt)
 #
 curl -sL https://github.com/djl/vcprompt/raw/master/bin/vcprompt > ~/bin/vcprompt
