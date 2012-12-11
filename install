@@ -1,18 +1,17 @@
 #!/bin/bash
 
 #
-# Overwrite any existing ~/.bash_profile with a symlink from the dotfiles project.
+# ~/.bash_profile
 #
 if [ -f ~/.bash_profile ]
 then
-	cp ~/.bash_profile ~/.bash_profile.old
-	rm ~/.bash_profile
+	mv ~/.bash_profile ~/.bash_profile.old	
 fi
 
 ln -s ~/bin/dotfiles/bash_profile ~/.bash_profile
 
 #
-# Get rid of ~/.profile
+# ~/.profile
 #
 if [ -f ~/.profile ]
 then
@@ -20,12 +19,11 @@ then
 fi
 
 #
-# Overwrite any existing ~/.bashrc with the dot_bashrc from the dotfiles project.
+# ~/.bashrc
 #
 if [ -f ~/.bashrc ]
 then
-	cp ~/.bashrc ~/.bashrc.old
-	rm ~/.bashrc
+	mv ~/.bashrc ~/.bashrc.old	
 fi
 
 ln -s ~/bin/dotfiles/bashrc ~/.bashrc
