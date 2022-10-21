@@ -1,0 +1,8 @@
+[alias]
+	s = status
+	co = checkout
+	c = commit
+
+[user]
+	email = git@behrang.org
+	name = Behrang Saeedzadeh

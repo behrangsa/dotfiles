@@ -1,51 +1,7 @@
 #!/bin/bash
 
-#
-# ~/.bash_profile
-#
-if [ -f ~/.bash_profile ]
-then
-	mv ~/.bash_profile ~/.bash_profile.old	
-fi
+set -ex
 
-ln -s ~/bin/dotfiles/bash_profile ~/.bash_profile
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
-#
-# ~/.profile
-#
-if [ -f ~/.profile ]
-then
-	mv ~/.profile ~/.profile.old
-fi
-
-#
-# ~/.bashrc
-#
-if [ -f ~/.bashrc ]
-then
-	mv ~/.bashrc ~/.bashrc.old	
-fi
-
-ln -s ~/bin/dotfiles/bashrc ~/.bashrc
-
-#
-# ~/.gemrc
-#
-if [ -f ~/.gemrc ]
-then
-	mv ~/.gemrc ~/.gemrc.old	
-fi
-
-ln -s ~/bin/dotfiles/gemrc ~/.gemrc
-
-#
-# Install vcprompt (https://github.com/djl/vcprompt)
-#
-curl -sL https://github.com/djl/vcprompt/raw/master/bin/vcprompt > ~/bin/vcprompt
-chmod 755 ~/bin/vcprompt
-
-#
-# Git
-#
-git config --global user.name "Behrang Saeedzadeh"    
-git config --global user.email behrangsa@gmail.com
+cp ${SCRIPT_DIR}/git/.gitconfig ~/.gitconfig
