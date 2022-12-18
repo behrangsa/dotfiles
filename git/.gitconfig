@@ -4,5 +4,5 @@
 	c = commit
 
 [user]
-	email = git@behrang.org
+	email = commit@behrang.org
 	name = Behrang Saeedzadeh
