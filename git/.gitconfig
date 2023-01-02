@@ -4,5 +4,8 @@
 	c = commit
 
 [user]
-	email = commit@behrang.org
+	email = git@behrang.org
 	name = Behrang Saeedzadeh
+
+[push]
+	autoSetupRemote = true
