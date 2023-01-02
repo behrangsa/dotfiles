@@ -1,5 +1,5 @@
 {
-  "name": "behrang.org",
+  "name": "Dotfiles Devcontainer",
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest",
