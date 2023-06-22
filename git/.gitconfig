@@ -4,8 +4,11 @@
 	c = commit
 
 [user]
-	email = git@behrang.org
+	email = 18451+behrangsa@users.noreply.github.com
 	name = Behrang Saeedzadeh
 
 [push]
 	autoSetupRemote = true
+
+[init]
+	defaultBranch = master
