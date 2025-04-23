@@ -65,12 +65,16 @@ ${color1}${font JetBrainsMono Nerd Font Mono:bold:size=14}VIM TIPS${font}${color
 
 ${execpi 300 $HOME/Projects/github.com/behrangsa/dotfiles/conky/vim_tips_processor.sh}
 
+${color1}${font JetBrainsMono Nerd Font Mono:bold:size=14}SENSORY INFORMATION${font}${color}
+
+${color2}CPU: ${execpi 10 sensors k10temp-pci-00c3 2>/dev/null | grep Tctl | awk '{print $2}' || echo "N/A"}${goto 320}${color2}NVMe: ${execpi 10 sensors nvme-pci-0100 2>/dev/null | grep Composite | awk '{print $2}' || echo "N/A"}
+${color2}GPU: ${execpi 10 sensors amdgpu-pci-0400 2>/dev/null | grep edge | awk '{print $2}' || echo "N/A"}${goto 320}${color2}ACPI: ${execpi 10 sensors acpitz-acpi-0 2>/dev/null | grep temp1 | awk '{print $2}' || echo "N/A"} 
+${color2}GPU Pwr: ${execpi 10 sensors amdgpu-pci-0400 2>/dev/null | grep PPT | awk '{print $2, $3}' || echo "N/A"}${goto 320}${color2}BAT: ${execpi 30 sensors BAT1-acpi-0 2>/dev/null | grep in0 | awk '{print $2, $3}' || echo "N/A"}
+
 ${color1}${font JetBrainsMono Nerd Font Mono:bold:size=14}CPU USAGE${font}${color}
 
 ${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}Total CPU Usage${font}${color}
 ${color2}Usage: ${cpu cpu0}%${alignr}${color2}Frequency: ${freq_g}GHz
-${color2}${cpubar cpu0}${color}
-${color4}${cpugraph cpu0 30,640 33CCFF 33CCFF -l}${color}
 
 ${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}Core Usage${font}${color}
 ${color2}1: ${cpu cpu1}%${goto 110}2: ${cpu cpu2}%${goto 220}3: ${cpu cpu3}%${goto 330}4: ${cpu cpu4}%${goto 440}5: ${cpu cpu5}%${goto 550}6: ${cpu cpu6}%
