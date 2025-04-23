@@ -81,10 +81,10 @@ ${color2}1: ${cpu cpu1}%${goto 110}2: ${cpu cpu2}%${goto 220}3: ${cpu cpu3}%${go
 ${color2}${cpubar cpu1 6,80}${goto 110}${cpubar cpu2 6,80}${goto 220}${cpubar cpu3 6,80}${goto 330}${cpubar cpu4 6,80}${goto 440}${cpubar cpu5 6,80}${goto 550}${cpubar cpu6 6,80}
 
 ${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}Top Processes${font}${color}
-${color2}Name${goto 190}PID${goto 250}CPU%${goto 320}MEM%${alignr}Time
-${color}${top name 1}${goto 190}${top pid 1}${goto 250}${top cpu 1}${goto 320}${top mem 1}${alignr}${top time 1}
-${color}${top name 2}${goto 190}${top pid 2}${goto 250}${top cpu 2}${goto 320}${top mem 2}${alignr}${top time 2}
-${color}${top name 3}${goto 190}${top pid 3}${goto 250}${top cpu 3}${goto 320}${top mem 3}${alignr}${top time 3}
+${color2}Name${goto 190} PID${goto 252}  CPU%${goto 320}  MEM%${alignr}Time
+${color}${top name 1}${goto 190}${top pid 1}${goto 252}${top cpu 1}${goto 322}${top mem 1}${alignr}${top time 1}
+${color}${top name 2}${goto 190}${top pid 2}${goto 252}${top cpu 2}${goto 322}${top mem 2}${alignr}${top time 2}
+${color}${top name 3}${goto 190}${top pid 3}${goto 252}${top cpu 3}${goto 322}${top mem 3}${alignr}${top time 3}
 
 ${color1}${font JetBrainsMono Nerd Font Mono:bold:size=14}DISK USAGE${font}${color}
 
