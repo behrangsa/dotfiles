@@ -1,15 +1,21 @@
+[user]
+	name = Behrang Saeedzadeh
+	email = behrangsa@gmail.com
+
 [alias]
 	s = status
-	co = checkout
 	c = commit
+	co = checkout
+	br = branch
+	lg = log --oneline --graph --decorate
+	last = log -1 HEAD
+	unstage = reset HEAD --
+	st = s
+	cm = c
 
-[user]
-	email = 18451+behrangsa@users.noreply.github.com
-	name = Behrang Saeedzadeh
+[init]
+	defaultBranch = master
 
 [push]
 	autoSetupRemote = true
 	default = current
-
-[init]
-	defaultBranch = master
