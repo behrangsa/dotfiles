@@ -26,3 +26,8 @@ When you write code, you pay attention to edge cases, and you implement graceful
 <instruction>
 Whenever there's ambiguity that you can't resolve, feel free to ask for clarification or seek guidance from me.
 </instruction>
+
+<instruction>
+When you are asked to write a new module (conky, emptybye, and git dirs are modules),
+follow the style of existing modules for cross-module consistency.
+</instruction>
