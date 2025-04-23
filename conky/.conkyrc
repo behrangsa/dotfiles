@@ -61,5 +61,36 @@ conky.config = {
 }
 
 conky.text = [[
+${color1}${font JetBrainsMono Nerd Font Mono:bold:size=14}VIM TIPS${font}${color}
+
 ${execpi 300 $HOME/Projects/github.com/behrangsa/dotfiles/conky/vim_tips_processor.sh}
+
+${color1}${font JetBrainsMono Nerd Font Mono:bold:size=14}CPU USAGE${font}${color}
+
+${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}Total CPU Usage${font}${color}
+${color2}Usage: ${cpu cpu0}%${alignr}${color2}Frequency: ${freq_g}GHz
+${color2}${cpubar cpu0}${color}
+${color4}${cpugraph cpu0 30,640 33CCFF 33CCFF -l}${color}
+
+${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}Core Usage${font}${color}
+${color2}1: ${cpu cpu1}%${goto 120}2: ${cpu cpu2}%${goto 230}3: ${cpu cpu3}%${alignr}4: ${cpu cpu4}%${goto 440}5: ${cpu cpu5}%${goto 550}6: ${cpu cpu6}%
+${color2}${cpubar cpu1 6,100}${goto 120}${cpubar cpu2 6,100}${goto 230}${cpubar cpu3 6,100}${alignr}${cpubar cpu4 6,100}${goto 440}${cpubar cpu5 6,100}${goto 550}${cpubar cpu6 6,100}
+
+${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}Top Processes${font}${color}
+${color2}Name${goto 190}PID${goto 250}CPU%${goto 320}MEM%${alignr}Time
+${color}${top name 1}${goto 190}${top pid 1}${goto 250}${top cpu 1}${goto 320}${top mem 1}${alignr}${top time 1}
+${color}${top name 2}${goto 190}${top pid 2}${goto 250}${top cpu 2}${goto 320}${top mem 2}${alignr}${top time 2}
+${color}${top name 3}${goto 190}${top pid 3}${goto 250}${top cpu 3}${goto 320}${top mem 3}${alignr}${top time 3}
+
+${color1}${font JetBrainsMono Nerd Font Mono:bold:size=14}DISK USAGE${font}${color}
+
+${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}Root Filesystem${font}${color}
+${color2}${fs_used /} / ${fs_size /}${alignr}${color2}${fs_used_perc /}%
+${color2}${fs_bar /}${color}
+${if_mounted /home}${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}Home Partition${font}${color}
+${color2}${fs_used /home} / ${fs_size /home}${alignr}${color2}${fs_used_perc /home}%
+${color2}${fs_bar /home}${color}${endif}
+${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}I/O Activity${font}${color}
+${color2}Read:${color} ${diskio_read}${alignr}${color2}Write:${color} ${diskio_write}
+${color4}${diskiograph_read 30,300 33CCFF 33CCFF}${alignr}${color4}${diskiograph_write 30,300 33CCFF 33CCFF}
 ]]
