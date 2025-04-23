@@ -1,0 +1,65 @@
+conky.config = {
+    -- Window settings
+    alignment = 'top_right',
+    double_buffer = true,
+
+    -- Border settings
+    border_width = 2,
+    border_inner_margin = 10,
+    border_outer_margin = 0,
+    draw_borders = true,
+
+    -- Text and color settings
+    default_color = 'white',
+    default_outline_color = 'white',
+    default_shade_color = 'white',
+    draw_outline = false,
+    draw_shades = false,
+    draw_graph_borders = true,
+    extra_newline = false,
+    font = 'JetBrainsMono Nerd Font Mono:13, DejaVu Sans Mono:size=13',
+    uppercase = false,
+    use_spacer = 'none',
+    use_xft = true,
+
+    -- Window position and size
+    gap_x = 20,
+    gap_y = 50,
+    minimum_height = 1370,
+    maximum_height = 1370,
+    minimum_width = 640,
+    maximum_width = 640,
+
+    -- Performance settings
+    cpu_avg_samples = 2,
+    net_avg_samples = 2,
+    no_buffers = true,
+    update_interval = 5.0, -- Update every 5 seconds
+
+    -- Window properties
+    own_window = true,
+    own_window_class = 'Conky',
+    own_window_type = 'desktop', -- Draw directly on the desktop background
+    own_window_argb_visual = true, -- True transparency support
+    own_window_argb_value = 120, -- Set transparency level (0=invisible, 255=opaque)
+
+    -- Output settings
+    out_to_console = false,
+    out_to_ncurses = false,
+    out_to_stderr = false,
+    out_to_x = true,
+    show_graph_range = false,
+    show_graph_scale = false,
+    stippled_borders = 0,
+
+    -- Custom colors for graphs/bars
+    -- These are still useful for setting default_color or for use with ${color ...}
+    color1 = '00FFFF',  -- cyan (e.g., titles)
+    color2 = '00FF00',  -- green (e.g., normal state)
+    color3 = 'FF0000',  -- red (e.g., high usage, warnings)
+    color4 = '33CCFF',  -- light blue (e.g., CPU graph)
+}
+
+conky.text = [[
+${execpi 300 $HOME/Projects/github.com/behrangsa/dotfiles/conky/vim_tips_processor.sh}
+]]
