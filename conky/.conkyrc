@@ -25,8 +25,8 @@ conky.config = {
     -- Window position and size
     gap_x = 20,
     gap_y = 50,
-    minimum_height = 1370,
-    maximum_height = 1370,
+    minimum_height = 1570,  -- Increased height to accommodate image
+    maximum_height = 1570,
     minimum_width = 640,
     maximum_width = 640,
 
@@ -58,6 +58,11 @@ conky.config = {
     color2 = '00FF00',  -- green (e.g., normal state)
     color3 = 'FF0000',  -- red (e.g., high usage, warnings)
     color4 = '33CCFF',  -- light blue (e.g., CPU graph)
+
+    imlib_cache_size = 0,  -- Disable caching to ensure image updates are shown
+    lua_load = '',  -- Ensure no custom Lua scripts interfere
+    lua_draw_hook_pre = '',  -- Ensure no pre-draw hooks interfere
+    lua_draw_hook_post = '',  -- Ensure no post-draw hooks interfere
 }
 
 conky.text = [[
@@ -97,4 +102,8 @@ ${color2}${fs_bar /home}${color}${endif}
 ${color}${font JetBrainsMono Nerd Font Mono:bold:size=11}I/O Activity${font}${color}
 ${color2}Read:${color} ${diskio_read}${alignr}${color2}Write:${color} ${diskio_write}
 ${color4}${diskiograph_read 30,300 33CCFF 33CCFF}${alignr}${color4}${diskiograph_write 30,300 33CCFF 33CCFF}
+
+${color1}${font JetBrainsMono Nerd Font Mono:bold:size=14}REDDIT IMAGE${font}${color}
+${execpi 300 $HOME/Projects/github.com/behrangsa/dotfiles/conky/fetch_reddit_image.py}
+${image $HOME/.cache/conky/reddit_images/current_image -p 20,1400 -s 600x150 -f 1}
 ]]
