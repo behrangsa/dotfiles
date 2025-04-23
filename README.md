@@ -71,26 +71,16 @@ You can also install individual modules by running their respective installation
 
 ### Git Configuration
 
-<details>
-<summary>Expand Git Configuration Details</summary>
-
 The git module provides:
-
 - Useful aliases for common git operations
 - Sensible default settings
 - Automatic remote setup
 
 The installer will create a symbolic link from `~/.gitconfig` to the configuration file in this repository.
 
-</details>
-
 ### Conky Configuration
 
-<details>
-<summary>Expand Conky Configuration Details</summary>
-
 The conky module includes:
-
 - System monitoring dashboard
 - CPU, memory, and disk usage statistics
 - Temperature monitoring
@@ -98,38 +88,24 @@ The conky module includes:
 
 The installer will create symbolic links to the configuration files and ensure the Vim tips processor script is executable.
 
-</details>
-
 ### EmptyBye Utility
 
-<details>
-<summary>Expand EmptyBye Utility Details</summary>
-
 EmptyBye is a Python utility that finds and removes empty directories:
-
 - Performs a depth-first search to identify truly empty directories
 - Provides a dry-run option to preview changes
 - Handles permission errors gracefully
 
 The installer will create a symbolic link to the script in `~/.local/bin`.
 
-</details>
-
 ### NPM Configuration
 
-<details>
-<summary>Expand NPM Configuration Details</summary>
-
 The npmrc module manages your npm configuration:
-
 - Securely manages npm authentication tokens
 - Configures registry settings and defaults
 - Sets up package initialization defaults
 - Maintains proper file permissions (600) for security
 
 The installer will create a symbolic link from `~/.npmrc` to the configuration file in this repository, ensuring secure handling of sensitive information.
-
-</details>
 
 </details>
 
@@ -149,5 +125,4 @@ The installer will create a symbolic link from `~/.npmrc` to the configuration f
 This project is available under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 ---
-
 <sub>Last updated: April 23, 2025</sub>
