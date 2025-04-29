@@ -16,6 +16,9 @@ A carefully crafted collection of configuration files and utility scripts for Li
   - [Conky Configuration](#conky-configuration)
   - [EmptyBye Utility](#emptybye-utility)
   - [NPM Configuration](#npm-configuration)
+  - [Image Filename Utility](#image-filename-utility)
+  - [Image Resizing Utility](#image-resizing-utility)
+  - [Memory Usage Visualization](#memory-usage-visualization)
 - [Requirements](#requirements)
 - [License](#license)
 
@@ -34,6 +37,9 @@ The following modules are included in this repository:
 - **conky**: System monitoring configuration with a Vim tips display feature
 - **emptybye**: Utility script for finding and removing empty directories
 - **npmrc**: npm configuration management with secure token handling
+- **imgfname**: Utility for suggesting filenames and metadata for images
+- **imgsizes**: Utility for generating resized variations of images
+- **memusg**: RAM usage visualization tool with treemap generation
 
 </details>
 
@@ -107,16 +113,39 @@ The npmrc module manages your npm configuration:
 
 The installer will create a symbolic link from `~/.npmrc` to the configuration file in this repository, ensuring secure handling of sensitive information.
 
+### Image Filename Utility
+
+The imgfname module provides:
+- Automated suggestions for image filenames based on content analysis
+- Metadata generation for descriptions and labels
+- Integration with `exiftool` for metadata writing
+
+### Image Resizing Utility
+
+The imgsizes module provides:
+- Batch resizing of images to multiple predefined sizes
+- Uses ImageMagick for high-quality resizing
+- Handles various image formats and edge cases gracefully
+
+### Memory Usage Visualization
+
+The memusg module provides:
+- Treemap visualization of RAM usage by processes
+- Exports data to CSV for further analysis
+- Handles large datasets and edge cases gracefully
+
 </details>
 
 <details>
 <summary><h2>Requirements</h2></summary>
 
 - Bash shell
-- Python 3 (for the EmptyBye utility)
+- Python 3 (for the EmptyBye, imgfname, imgsizes, and memusg utilities)
 - Git (for version control and git configuration)
 - Conky (for system monitoring)
 - Node.js and npm (for npm configuration)
+- ImageMagick (for the imgsizes utility)
+- ExifTool (for the imgfname utility)
 
 </details>
 
@@ -125,4 +154,4 @@ The installer will create a symbolic link from `~/.npmrc` to the configuration f
 This project is available under the MIT License. See the [LICENSE](LICENSE) file for more details.
 
 ---
-<sub>Last updated: April 23, 2025</sub>
+<sub>Last updated: April 29, 2025</sub>

@@ -7,7 +7,7 @@
 	c = commit
 	co = checkout
 	br = branch
-	lg = log --oneline --graph --decorate
+	lg = log --oneline --graph --decorate --all --author-date-order
 	last = log -1 HEAD
 	unstage = reset HEAD --
 	st = s
@@ -19,3 +19,9 @@
 [push]
 	autoSetupRemote = true
 	default = current
+
+[credential "https://github.com"]
+	helper = !/home/linuxbrew/.linuxbrew/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
+	helper = !/home/linuxbrew/.linuxbrew/bin/gh auth git-credential
