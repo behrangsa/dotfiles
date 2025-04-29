@@ -34,7 +34,7 @@ log_error() {
 install_mkfav() {
     local target_dir="${HOME}/.local/bin"
     local source_script="${SCRIPT_DIR}/mkfav.sh"
-    local target_script="${target_dir}/mkfav.sh"
+    local target_script="${target_dir}/mkfav"
 
     # Ensure source script exists and is executable
     if [ ! -f "$source_script" ]; then
