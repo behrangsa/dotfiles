@@ -1,157 +1,75 @@
-# Dotfiles
+# 🧰 behrangsa's Dotfiles
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Maintenance](https://img.shields.io/badge/Maintained%3F-yes-green.svg)](https://github.com/behrangsa/dotfiles/graphs/commit-activity)
+> "Simplicity is a great virtue but it requires hard work to achieve it."
+> &mdash; Edsger W. Dijkstra
 
-A carefully crafted collection of configuration files and utility scripts for Linux systems.
+This repository contains configuration files and utilities that form the
+foundation of my Linux development environment.
 
-<details>
-<summary>Table of Contents</summary>
+## 📦 Modules
 
-- [Overview](#overview)
-- [Modules](#modules)
-- [Installation](#installation)
-- [Module Details](#module-details)
-  - [Git Configuration](#git-configuration)
-  - [Conky Configuration](#conky-configuration)
-  - [EmptyBye Utility](#emptybye-utility)
-  - [NPM Configuration](#npm-configuration)
-  - [Image Filename Utility](#image-filename-utility)
-  - [Image Resizing Utility](#image-resizing-utility)
-  - [Memory Usage Visualization](#memory-usage-visualization)
-- [Requirements](#requirements)
-- [License](#license)
+| Module       | Purpose                                        | Dependencies             |
+| ------------ | ---------------------------------------------- | ------------------------ |
+| **npmrc**    | NPM configuration with security best practices | Node.js                  |
+| **memusg**   | Memory usage visualization (treemap)           | Python, psutil,          |
+|              |                                                | matplotlib, squarify     |
+| **imgsizes** | Image resizing utility                         | Python, ImageMagick      |
+| **imgfname** | AI-powered image metadata tagging              | Python, Ollama, exiftool |
+| **git**      | Git configuration                              | Git                      |
+| **emptybye** | Empty directory removal tool                   | Python 3                 |
+| **conky**    | System monitoring dashboard                    | Conky                    |
 
-</details>
-
-## Overview
-
-This repository contains my personal dotfiles and system configuration tools. Each component is modularized for easy installation and maintenance. I've designed this system to be both functional and adaptable to various Linux environments.
-
-<details>
-<summary><h2>Modules</h2></summary>
-
-The following modules are included in this repository:
-
-- **git**: Git configuration with useful aliases and default settings
-- **conky**: System monitoring configuration with a Vim tips display feature
-- **emptybye**: Utility script for finding and removing empty directories
-- **npmrc**: npm configuration management with secure token handling
-- **imgfname**: Utility for suggesting filenames and metadata for images
-- **imgsizes**: Utility for generating resized variations of images
-- **memusg**: RAM usage visualization tool with treemap generation
-
-</details>
-
-<details>
-<summary><h2>Installation</h2></summary>
-
-The repository includes a master installation script that will automatically detect and install all modules.
+## 🛠️ Installation
 
 ```bash
-git clone https://github.com/behrangsa/dotfiles.git
-cd dotfiles
+# Clone repository
+git clone https://github.com/behrangsa/dotfiles.git ~/.dotfiles
+
+# Run installer
+cd ~/.dotfiles
 ./install.sh
 ```
 
-You can also install individual modules by running their respective installation scripts:
+## 🧾 Module Details
+
+### npmrc
+
+- Security-focused configuration
+- Strict version control with exact dependencies
+- Optimized for slow network connections
+- File permissions set to 600 for credentials
+
+### memusg
 
 ```bash
-# Install just the git configuration
-./git/install.sh
-
-# Install just the conky configuration
-./conky/install.sh
-
-# Install just the emptybye utility
-./emptybye/install.sh
-
-# Install just the npm configuration
-./npmrc/install.sh
+# Usage
+memusg --output ~/ram_usage.png --csv ~/ram_usage.csv
 ```
 
-</details>
+### imgfname
 
-<details>
-<summary><h2>Module Details</h2></summary>
+```bash4
+# AI-powered image organization
+imgfname ~/Pictures/001.jpg -w  # Analyze and write metadata
+imgfname ~/Photos/ -f           # Batch process with force overwrite
+```
 
-### Git Configuration
+### emptybye
 
-The git module provides:
-- Useful aliases for common git operations
-- Sensible default settings
-- Automatic remote setup
+```bash
+# Dry run first
+emptybye ~/Downloads/unsorted --dry-run
 
-The installer will create a symbolic link from `~/.gitconfig` to the configuration file in this repository.
+# Remove empty directories
+emptybye ~/Downloads/unsorted
+```
 
-### Conky Configuration
+## 📊 Conky Dashboard
 
-The conky module includes:
-- System monitoring dashboard
-- CPU, memory, and disk usage statistics
-- Temperature monitoring
-- Integration with a Vim tips display feature
+- Real-time system monitoring
+- Temperature, CPU, memory, and disk usage
+- Custom color scheme with transparency support
 
-The installer will create symbolic links to the configuration files and ensure the Vim tips processor script is executable.
+## 📄 License
 
-### EmptyBye Utility
-
-EmptyBye is a Python utility that finds and removes empty directories:
-- Performs a depth-first search to identify truly empty directories
-- Provides a dry-run option to preview changes
-- Handles permission errors gracefully
-
-The installer will create a symbolic link to the script in `~/.local/bin`.
-
-### NPM Configuration
-
-The npmrc module manages your npm configuration:
-- Securely manages npm authentication tokens
-- Configures registry settings and defaults
-- Sets up package initialization defaults
-- Maintains proper file permissions (600) for security
-
-The installer will create a symbolic link from `~/.npmrc` to the configuration file in this repository, ensuring secure handling of sensitive information.
-
-### Image Filename Utility
-
-The imgfname module provides:
-- Automated suggestions for image filenames based on content analysis
-- Metadata generation for descriptions and labels
-- Integration with `exiftool` for metadata writing
-
-### Image Resizing Utility
-
-The imgsizes module provides:
-- Batch resizing of images to multiple predefined sizes
-- Uses ImageMagick for high-quality resizing
-- Handles various image formats and edge cases gracefully
-
-### Memory Usage Visualization
-
-The memusg module provides:
-- Treemap visualization of RAM usage by processes
-- Exports data to CSV for further analysis
-- Handles large datasets and edge cases gracefully
-
-</details>
-
-<details>
-<summary><h2>Requirements</h2></summary>
-
-- Bash shell
-- Python 3 (for the EmptyBye, imgfname, imgsizes, and memusg utilities)
-- Git (for version control and git configuration)
-- Conky (for system monitoring)
-- Node.js and npm (for npm configuration)
-- ImageMagick (for the imgsizes utility)
-- ExifTool (for the imgfname utility)
-
-</details>
-
-## License
-
-This project is available under the MIT License. See the [LICENSE](LICENSE) file for more details.
-
----
-<sub>Last updated: April 29, 2025</sub>
+MIT License - see [LICENSE](LICENSE) for details.
