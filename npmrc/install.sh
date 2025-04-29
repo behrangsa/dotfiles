@@ -1,7 +1,6 @@
 #!/bin/bash
-# install.sh - Symlink ~/.npmrc to ./npmrc/.npmrc
-# This script creates a symbolic link from the user's home directory .npmrc
-# to the npmrc/.npmrc file in this repository, sets permissions, and handles backups.
+# install.sh - Copy ~/.npmrc to ./npmrc/.npmrc
+# This script copies the .npmrc file to the user's home directory, sets permissions, and handles backups.
 
 set -euo pipefail
 
@@ -48,8 +47,18 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
+# If the symlink exists, remove it
+if [ -L "$TARGET_NPMRC" ]; then
+    log_info "Removing existing symlink at $TARGET_NPMRC"
+    rm "$TARGET_NPMRC"
+    if [[ $? -ne 0 ]]; then
+        log_error "Failed to remove existing symlink."
+        exit 1
+    fi
+fi
+
 # If the destination exists and is a regular file (not a symlink), back it up
-if [ -f "$TARGET_NPMRC" ] && [ ! -L "$TARGET_NPMRC" ]; then
+if [ -f "$TARGET_NPMRC" ]; then
     BACKUP_FILE="$BACKUP_DIR/.npmrc.backup.$(date +%Y%m%d%H%M%S)"
     log_info "Backing up existing $TARGET_NPMRC to $BACKUP_FILE"
     mv "$TARGET_NPMRC" "$BACKUP_FILE"
@@ -59,37 +68,19 @@ if [ -f "$TARGET_NPMRC" ] && [ ! -L "$TARGET_NPMRC" ]; then
     fi
 fi
 
-# If the symlink exists but points elsewhere, remove it
-if [ -L "$TARGET_NPMRC" ] && [ "$(readlink "$TARGET_NPMRC")" != "$SOURCE_NPMRC" ]; then
-    log_info "Removing incorrect symlink at $TARGET_NPMRC"
-    rm "$TARGET_NPMRC"
-    if [[ $? -ne 0 ]]; then
-        log_error "Failed to remove incorrect symlink."
-        exit 1
-    fi
-fi
-
-# Set secure permissions on the source file *before* linking
-log_info "Setting permissions (600) on source file: $SOURCE_NPMRC"
-chmod 600 "$SOURCE_NPMRC"
+# Copy the source file to the target
+log_info "Copying .npmrc to $TARGET_NPMRC"
+cp "$SOURCE_NPMRC" "$TARGET_NPMRC"
 if [[ $? -ne 0 ]]; then
-    log_warn "Failed to set permissions on source .npmrc file. Proceeding anyway."
-    # Continue, but warn the user. Permissions are important for .npmrc.
+    log_error "Failed to copy .npmrc file."
+    exit 1
 fi
 
-# Create the symlink if it doesn't exist
-if [ ! -L "$TARGET_NPMRC" ]; then
-    log_info "Creating symlink: $TARGET_NPMRC -> $SOURCE_NPMRC"
-    ln -s "$SOURCE_NPMRC" "$TARGET_NPMRC"
-    if [[ $? -ne 0 ]]; then
-        log_error "Failed to create symbolic link."
-        # Attempt to clean up potentially broken link
-        rm -f "$TARGET_NPMRC"
-        exit 1
-    fi
-    log_success "Symlink created successfully."
-else
-    log_info "Symlink already exists and is correct: $TARGET_NPMRC -> $SOURCE_NPMRC"
+# Set secure permissions on the target file
+log_info "Setting permissions (600) on target file: $TARGET_NPMRC"
+chmod 600 "$TARGET_NPMRC"
+if [[ $? -ne 0 ]]; then
+    log_warn "Failed to set permissions on target .npmrc file. Proceeding anyway."
 fi
 
 log_success "npmrc module installation complete."
