@@ -11,6 +11,7 @@ foundation of my Linux development environment.
 | Module       | Purpose                                        | Dependencies             |
 | ------------ | ---------------------------------------------- | ------------------------ |
 | **npmrc**    | NPM configuration with security best practices | Node.js                  |
+| **mkfav**    | Generate favicon.ico from images               | Bash, ImageMagick        |
 | **memusg**   | Memory usage visualization (treemap)           | Python, psutil,          |
 |              |                                                | matplotlib, squarify     |
 | **imgsizes** | Image resizing utility                         | Python, ImageMagick      |
@@ -38,6 +39,19 @@ cd ~/.dotfiles
 - Strict version control with exact dependencies
 - Optimized for slow network connections
 - File permissions set to 600 for credentials
+
+### mkfav
+
+```bash
+# Create favicon from an image
+mkfav logo.png
+
+# Custom output filename
+mkfav image.png custom_favicon.ico
+
+# Specify full paths
+mkfav /path/to/image.jpg /path/to/output/favicon.ico
+```
 
 ### memusg
 
