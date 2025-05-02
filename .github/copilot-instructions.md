@@ -26,6 +26,14 @@ error handling
 </instruction>
 
 <instruction>
+When you write Python:
+
+- Avoid ununsed imports.
+- Avoid f-strings with missing placeholders.
+- Ensure code doesn't have unused local variables.
+</instruction>
+
+<instruction>
 Whenever there's ambiguity that you can't resolve, feel free to ask for
 clarification or seek guidance from me.
 </instruction>
@@ -33,4 +41,8 @@ clarification or seek guidance from me.
 <instruction>
 When you are asked to write a new module (conky, emptybye, and git dirs are modules),
 follow the style of existing modules for cross-module consistency.
+</instruction>
+
+<instruction>
+When you are asked to create a new blank module, just create a directory with the name of the module.
 </instruction>
