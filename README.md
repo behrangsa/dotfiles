@@ -10,6 +10,7 @@ foundation of my Linux development environment.
 
 | Module       | Purpose                                        | Dependencies             |
 | ------------ | ---------------------------------------------- | ------------------------ |
+| **openai**   | Command-line interface for OpenAI API          | Python, rich, pygments   |
 | **npmrc**    | NPM configuration with security best practices | Node.js                  |
 | **mkfav**    | Generate favicon.ico from images               | Bash, ImageMagick        |
 | **memusg**   | Memory usage visualization (treemap)           | Python, psutil,          |
@@ -32,6 +33,22 @@ cd ~/.dotfiles
 ```
 
 ## 🧾 Module Details
+
+### openai
+
+```bash
+# List all available models
+bu-openai ls models
+
+# List models in a table format
+bu-openai ls models --table
+
+# Filter models containing 'gpt' sorted by creation date
+bu-openai ls models --filter gpt --sort created --pretty-dates
+
+# Configure your API key
+bu-openai configure
+```
 
 ### npmrc
 
