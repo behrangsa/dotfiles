@@ -10,6 +10,7 @@ foundation of my Linux development environment.
 
 | Module       | Purpose                                        | Dependencies             |
 | ------------ | ---------------------------------------------- | ------------------------ |
+| **help**     | Expert terminal help system using OpenAI API   | Python, requests         |
 | **openai**   | Command-line interface for OpenAI API          | Python, rich, pygments   |
 | **npmrc**    | NPM configuration with security best practices | Node.js                  |
 | **mkfav**    | Generate favicon.ico from images               | Bash, ImageMagick        |
@@ -33,6 +34,19 @@ cd ~/.dotfiles
 ```
 
 ## 🧾 Module Details
+
+### help
+
+```bash
+# Get expert help on Vim commands
+bu-help -s vim -p "How can I show line numbers in vim, persistently"
+
+# Learn Bash file operations
+bu-help -s bash -p "How do I find and replace text in multiple files"
+
+# Get Git guidance
+bu-help -s git -p "How to squash my last 3 commits"
+```
 
 ### openai
 

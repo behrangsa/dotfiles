@@ -1,0 +1,93 @@
+# Help Utility
+
+A command-line tool that provides expert help on various subjects using OpenAI's chat models. The utility customizes the system prompt based on the subject and streams responses directly to your terminal.
+
+## Features
+
+- **Subject-Specific Expertise**: Automatically uses specialized system prompts based on the subject
+- **Streaming Responses**: Displays answers as they are generated, character by character
+- **Terminal-Friendly Output**: Clean, colorized terminal output with proper formatting
+- **Multiple Subject Areas**: Pre-configured for vim, bash, git, python, and many other topics
+- **Extensible Design**: Easy to add new subject areas
+
+## Installation
+
+The module is installed automatically when running the main dotfiles install script:
+
+```bash
+./install.sh
+```
+
+You can also install it standalone:
+
+```bash
+cd ~/dotfiles/help
+./install.sh
+```
+
+### Dependencies
+
+The script requires Python 3 and the following Python packages (automatically installed):
+- `requests`: For API communication
+
+You'll also need an OpenAI API key. You can configure it using the `bu-openai configure` command if you have the OpenAI module installed, or by setting the `OPENAI_API_KEY` environment variable.
+
+## Usage
+
+```bash
+bu-help --subject <subject> --prompt <prompt>
+```
+
+or in short form:
+
+```bash
+bu-help -s <subject> -p <prompt>
+```
+
+### Arguments
+
+- `--subject`, `-s`: The subject to get help on (e.g., vim, bash, git)
+- `--prompt`, `-p`: Your help query or question
+- `--model`, `-m`: The OpenAI model to use (default: gpt-4o)
+- `--key`, `-k`: Directly provide an OpenAI API key
+
+### Supported Subjects
+
+The utility comes pre-configured with specialized system prompts for:
+
+- vim
+- bash
+- git
+- python
+- linux
+- docker
+- kubernetes
+- aws
+- javascript
+- sql
+- regex
+
+For any other subject, a generic expert prompt will be created automatically.
+
+## Examples
+
+```bash
+# Get help with Vim line numbering
+bu-help --subject vim --prompt "How can I show line numbers in vim, persistently"
+
+# Learn about Bash file operations
+bu-help -s bash -p "How do I find and replace text in multiple files"
+
+# Get Git guidance
+bu-help -s git -p "How to squash my last 3 commits"
+
+# Python programming help
+bu-help -s python -p "How can I handle exceptions properly in Python"
+
+# Docker container management
+bu-help -s docker -p "How to reduce the size of my Docker images"
+```
+
+## Configuration
+
+The utility uses the OpenAI API key stored in `~/.config/openai/config` with secure file permissions, or from the `OPENAI_API_KEY` environment variable. You can also provide an API key for individual commands using the `-k/--key` option.
