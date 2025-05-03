@@ -1,6 +1,6 @@
 conky.config = {
     -- Window settings
-    alignment = 'top_right',
+    alignment = 'top_left',
     double_buffer = true,
 
     -- Border settings
