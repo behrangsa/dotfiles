@@ -17,33 +17,33 @@ conky.config = {
     draw_shades = false,
     draw_graph_borders = true,
     extra_newline = false,
-    font = 'Maple Mono NF:size=15',
+    font = 'Maple Mono NF:size=10',
     uppercase = false,
     use_spacer = 'none',
     use_xft = true,
-    
+
     -- Image settings
-    imlib_cache_size = 0,  -- Disable caching for dynamic images
+    imlib_cache_size = 0,
 
     -- Window position and size
     gap_x = 20,
     gap_y = 50,
     minimum_height = 1370,
-    minimum_width = 949,
-    maximum_width = 949,
+    minimum_width = 500,
+    maximum_width = 500,
 
     -- Performance settings
     cpu_avg_samples = 2,
     net_avg_samples = 2,
     no_buffers = true,
-    update_interval = 5.0,         -- Update every 5 seconds
+    update_interval = 5.0,
 
     -- Window properties
     own_window = true,
     own_window_class = 'Conky',
-    own_window_type = 'desktop',   -- Draw directly on the desktop background
-    own_window_argb_visual = true, -- True transparency support
-    own_window_argb_value = 128,   -- Set transparency level (0=invisible, 255=opaque)
+    own_window_type = 'desktop',
+    own_window_argb_visual = true,
+    own_window_argb_value = 128,
 
     -- Output settings
     out_to_console = false,
@@ -63,31 +63,31 @@ conky.config = {
 }
 
 conky.text = [[
-${color1}${font Maple Mono NF:ExtraBold:size=16}Sensory Information${font}${color}${color2}
+${color1}${font Maple Mono NF:ExtraBold:size=12}Sensory Information${font}${color}
+${color2}
 ${execpi 10 sensors.sh 1}
 ${execpi 10 sensors.sh 2}
 ${color}
 #
-${font Maple Mono NF:ExtraBold}${color2}Name${goto 275}PID${goto 355}CPU%${goto 473}MEM%${alignr}Time${font}${color}
+${font Maple Mono NF:ExtraBold:size=12}${color2}Name${goto 275}PID${goto 355}CPU%${goto 473}MEM%${alignr}Time${font}${color}
 ${top name 1}${goto 220}${top pid 1}${goto 320}${top cpu 1}${goto 440}${top mem 1}${alignr}${top time 1}
 ${top name 2}${goto 220}${top pid 2}${goto 320}${top cpu 2}${goto 440}${top mem 2}${alignr}${top time 2}
 ${top name 3}${goto 220}${top pid 3}${goto 320}${top cpu 3}${goto 440}${top mem 3}${alignr}${top time 3}
 ${top name 4}${goto 220}${top pid 4}${goto 320}${top cpu 4}${goto 440}${top mem 4}${alignr}${top time 4}
 
-${font Maple Mono NF:ExtraBold:size=16}${color1}Disk usage${color}${font}${color2}
+${font Maple Mono NF:ExtraBold:size=12}${color1}Disk usage${color}${font}${color2}
 ${fs_used /} / ${fs_size /}${alignr}${fs_used_perc /}%
 ${fs_bar /}
 ${color}
 #
-${font Maple Mono NF:ExtraBold:size=16}${color1}I/O Activity${color}${font}${color2}
+${font Maple Mono NF:ExtraBold:size=12}${color1}I/O Activity${color}${font}${color2}
 Read: ${diskio_read}${alignr} Write: ${diskio_write}
-${diskiograph_read 30,300 33CCFF 33CCFF}${alignr}${diskiograph_write 30,300 33CCFF 33CCFF}
+${diskiograph_read 20,200 33CCFF 33CCFF}${alignr}${diskiograph_write 20,200 33CCFF 33CCFF}
 ${color}
 #
-${font Maple Mono NF:ExtraBold:size=16}${color1}Network Statistics${color}${font}
+${font Maple Mono NF:ExtraBold:size=12}${color1}Network Statistics${color}${font}
 ${execpi 300 vnstati.sh}
-${image /tmp/vnstati-d31.png -p 0,820 -s 949x180}
-${image /tmp/vnstati-h24.png -p 0,1010 -s 949x180}
-${image /tmp/vnstati-w4.png -p 0,1200 -s 949x180}
-${image /tmp/vnstati-m1.png -p 0,1390 -s 949x180}
+${image /tmp/vnstati-d31.png -p 0,560}
+${image /tmp/vnstati-h24.png -p 0,681}
+${image /tmp/vnstati-m1.png  -p 0,911}
 ]]
