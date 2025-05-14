@@ -27,7 +27,7 @@ from rich import box
 API_BASE_URL = "https://api.openai.com/v1"
 CONFIG_DIR = Path.home() / ".config" / "openai"
 CONFIG_FILE = CONFIG_DIR / "config"
-API_KEY_ENV_VAR = "OPENAI_API_KEY"
+API_KEY_ENV_VAR = "_OPENAI_API_KEY"
 
 
 def get_api_key() -> Optional[str]:
@@ -326,7 +326,7 @@ def cmd_list_models(args: argparse.Namespace) -> int:
     api_key = args.key or get_api_key()
     
     if not api_key:
-        print("Error: OpenAI API key not found. Please set the OPENAI_API_KEY environment variable, "
+        print("Error: OpenAI API key not found. Please set the _OPENAI_API_KEY environment variable, "
               "provide it with --key, or use 'bu-openai.py configure' to set up.", file=sys.stderr)
         return 1
     

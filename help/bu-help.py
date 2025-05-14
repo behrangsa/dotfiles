@@ -25,7 +25,7 @@ from typing import Dict, Any, Optional, Iterator, Union
 API_BASE_URL = "https://api.openai.com/v1/chat/completions"
 CONFIG_DIR = Path.home() / ".config" / "openai"
 CONFIG_FILE = CONFIG_DIR / "config"
-API_KEY_ENV_VAR = "OPENAI_API_KEY"
+API_KEY_ENV_VAR = "_OPENAI_API_KEY"
 DEFAULT_MODEL = "gpt-4o"
 
 # ANSI color codes for terminal output
