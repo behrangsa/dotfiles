@@ -1,4 +1,7 @@
 conky.config = {
+    -- Misc settings
+    background = true,
+
     -- Window settings
     alignment = 'top_left',
     double_buffer = true,
@@ -10,9 +13,9 @@ conky.config = {
     draw_borders = true,
 
     -- Text and color settings
-    default_color = 'white',
-    default_outline_color = 'white',
-    default_shade_color = 'white',
+    default_color = '0D1016',
+    default_outline_color = white,
+    default_shade_color = white,
     draw_outline = false,
     draw_shades = false,
     draw_graph_borders = true,
@@ -26,7 +29,7 @@ conky.config = {
     imlib_cache_size = 0,
 
     -- Window position and size
-    gap_x = 20,
+    gap_x = 17,
     gap_y = 50,
     minimum_height = 1370,
     minimum_width = 500,
@@ -43,7 +46,8 @@ conky.config = {
     own_window_class = 'Conky',
     own_window_type = 'desktop',
     own_window_argb_visual = true,
-    own_window_argb_value = 128,
+    own_window_argb_value = 255,
+    own_window_colour = '0D1016',
 
     -- Output settings
     out_to_console = false,
@@ -56,10 +60,11 @@ conky.config = {
 
     -- Custom colors for graphs/bars
     -- These are still useful for setting default_color or for use with ${color ...}
-    color1 = '00FFFF',  -- cyan (e.g., titles)
-    color2 = '00FF00',  -- green (e.g., normal state)
-    color3 = 'FF0000',  -- red (e.g., high usage, warnings)
-    color4 = '33CCFF',  -- light blue (e.g., CPU graph)
+    color1  = '00FFFF',  -- cyan (e.g., titles)
+    color2  = '00FF00',  -- green (e.g., normal state)
+    color3  = 'FF0000',  -- red (e.g., high usage, warnings)
+    color4  = '33CCFF',  -- light blue (e.g., CPU graph)
+    colors1 = '00FFFF',  -- sensor color 1 (
 }
 
 conky.text = [[
@@ -69,11 +74,11 @@ ${execpi 10 sensors.sh 1}
 ${execpi 10 sensors.sh 2}
 ${color}
 #
-${font Maple Mono NF:ExtraBold:size=12}${color2}Name${goto 275}PID${goto 355}CPU%${goto 473}MEM%${alignr}Time${font}${color}
-${top name 1}${goto 220}${top pid 1}${goto 320}${top cpu 1}${goto 440}${top mem 1}${alignr}${top time 1}
-${top name 2}${goto 220}${top pid 2}${goto 320}${top cpu 2}${goto 440}${top mem 2}${alignr}${top time 2}
-${top name 3}${goto 220}${top pid 3}${goto 320}${top cpu 3}${goto 440}${top mem 3}${alignr}${top time 3}
-${top name 4}${goto 220}${top pid 4}${goto 320}${top cpu 4}${goto 440}${top mem 4}${alignr}${top time 4}
+${font Maple Mono NF:ExtraBold:size=12}${color2}Name${goto 246}PID${goto 330}CPU%${alignr}MEM%${color}${font}${color2}
+${top name 1}${goto 220}${top pid 1}${goto 320}${top cpu 1}${alignr}${top mem 1}
+${top name 2}${goto 220}${top pid 2}${goto 320}${top cpu 2}${alignr}${top mem 2}
+${top name 3}${goto 220}${top pid 3}${goto 320}${top cpu 3}${alignr}${top mem 3}
+${top name 4}${goto 220}${top pid 4}${goto 320}${top cpu 4}${alignr}${top mem 4}${color}
 
 ${font Maple Mono NF:ExtraBold:size=12}${color1}Disk usage${color}${font}${color2}
 ${fs_used /} / ${fs_size /}${alignr}${fs_used_perc /}%
@@ -87,7 +92,5 @@ ${color}
 #
 ${font Maple Mono NF:ExtraBold:size=12}${color1}Network Statistics${color}${font}
 ${execpi 300 vnstati.sh}
-${image /tmp/vnstati-d31.png -p 0,560}
-${image /tmp/vnstati-h24.png -p 0,681}
-${image /tmp/vnstati-m1.png  -p 0,911}
+${image /tmp/vnstati-all.png -p 0,390}
 ]]
