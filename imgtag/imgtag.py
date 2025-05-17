@@ -33,16 +33,17 @@ METADATA_SUPPORTING_FORMATS_LOWER: Set[str] = {
 
 def setup_logging() -> None:
     """Configure basic logging (placeholder for future logging implementation)."""
-    pass # In future could use logging module instead of print
+    pass  # In future could use logging module instead of print
 
-def sanitize_filename(filename_base: str, extension: str) -> str:
+
+def sanitize_filename(filename_base: str, extension: str = "") -> str:
     """
     Cleans a filename base and attaches the extension.
-    
+
     Args:
         filename_base: The base filename to sanitize
         extension: The file extension (with or without leading dot)
-        
+
     Returns:
         A sanitized filename with extension
     """
@@ -61,16 +62,16 @@ def sanitize_filename(filename_base: str, extension: str) -> str:
         extension = '.' + extension
     return f"{filename_base}{extension.lower()}"
 
+
 def prepare_image_data(image_path: str) -> Tuple[Optional[str], Optional[str]]:
     """
     Prepares image data for analysis by converting to base64.
-    
+
     Args:
         image_path: Path to the image file
-        
+
     Returns:
         Tuple containing (base64_encoded_image, image_format)
-        Both can be None if processing fails
     """
     # Early validation
     if not image_path or not isinstance(image_path, str):
@@ -94,9 +95,10 @@ def prepare_image_data(image_path: str) -> Tuple[Optional[str], Optional[str]]:
     result = _prepare_with_pil(abs_image_path)
     if result[0] is not None:
         return result
-        
+
     # Fall back to raw bytes if PIL fails
     return _prepare_with_raw_bytes(abs_image_path)
+
 
 def _prepare_with_pil(abs_image_path: str) -> Tuple[Optional[str], Optional[str]]:
     """Helper function for PIL-based image processing"""
@@ -119,22 +121,25 @@ def _prepare_with_pil(abs_image_path: str) -> Tuple[Optional[str], Optional[str]
                     save_format = 'PNG'
 
             return _save_image_to_base64(img, save_format)
-            
+
     except UnidentifiedImageError:
-        print(f"Error: Pillow could not identify or open '{os.path.basename(abs_image_path)}' as an image.", 
-              file=sys.stderr)
+        error_msg = f"Error: Pillow could not identify or open '{os.path.basename(abs_image_path)}' as an image."
+        print(error_msg, file=sys.stderr)
         return None, None
-        
+
     except Exception as e:
         print(f"Error opening/processing image with Pillow: {e}", file=sys.stderr)
         return None, None
 
-def _save_image_to_base64(img: Image.Image, save_format: str) -> Tuple[Optional[str], Optional[str]]:
+
+def _save_image_to_base64(
+    img: Image.Image, save_format: str
+) -> Tuple[Optional[str], Optional[str]]:
     """Helper function to save image to base64 with proper format conversion"""
     try:
         img_byte_arr = BytesIO()
         img_to_save = img
-        
+
         # Convert image mode if needed for the target format
         if save_format == 'JPEG' and img.mode not in ('RGB', 'L'):
             print(f"Converting image mode from {img.mode} to RGB for JPEG saving.")
@@ -147,17 +152,18 @@ def _save_image_to_base64(img: Image.Image, save_format: str) -> Tuple[Optional[
         print(f"Image data prepared using format: {save_format}")
         base64_image = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
         return base64_image, save_format
-        
+
     except Exception as save_err:
         # Try PNG as fallback
-        print(f"Warning: Could not save in format '{save_format}'. Trying PNG fallback. Error: {save_err}")
+        print(f"Warning: Could not save in format '{save_format}'. Trying PNG fallback.")
+        print(f"Error: {save_err}")
         try:
             img_byte_arr = BytesIO()
             img_to_save = img
             if img.mode not in ('RGB', 'RGBA', 'L', 'LA'):
                 print(f"Converting image mode from {img.mode} to RGBA for PNG analysis.")
                 img_to_save = img.convert('RGBA')
-                
+
             img_to_save.save(img_byte_arr, format='PNG')
             print("Image data prepared using format: PNG")
             base64_image = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
@@ -165,6 +171,7 @@ def _save_image_to_base64(img: Image.Image, save_format: str) -> Tuple[Optional[
         except Exception as e:
             print(f"Error in PNG fallback: {e}", file=sys.stderr)
             return None, None
+
 
 def _prepare_with_raw_bytes(abs_image_path: str) -> Tuple[Optional[str], Optional[str]]:
     """Helper function for raw bytes fallback"""
@@ -176,7 +183,7 @@ def _prepare_with_raw_bytes(abs_image_path: str) -> Tuple[Optional[str], Optiona
                 print("Error: Fallback failed, read 0 bytes.", file=sys.stderr)
                 return None, None
             base64_image = base64.b64encode(image_bytes).decode('utf-8')
-            
+
         _, ext = os.path.splitext(abs_image_path)
         image_format = ext.lstrip('.').upper() if ext else None
         print(f"Fallback successful. Using extension '{image_format or 'None'}' as format guess.")
@@ -185,13 +192,14 @@ def _prepare_with_raw_bytes(abs_image_path: str) -> Tuple[Optional[str], Optiona
         print(f"Fallback failed: Could not read raw image bytes: {fallback_e}", file=sys.stderr)
         return None, None
 
+
 def call_ollama_api(base64_image: str) -> Optional[str]:
     """
     Calls Ollama API to analyze the image.
-    
+
     Args:
         base64_image: Base64-encoded image data
-        
+
     Returns:
         The analysis text from Ollama or None if failed
     """
@@ -223,19 +231,21 @@ Labels: [label1, label2, label3]
         duration = time.time() - start_time
         print(f"Ollama analysis complete ({duration:.2f}s).")
         return analysis_text
-        
+
     except Exception as e:
         print(f"\nError communicating with Ollama: {e}", file=sys.stderr)
-        print(f"Ensure Ollama is running and the model '{OLLAMA_MODEL}' is available.", file=sys.stderr)
+        print(f"Ensure Ollama is running and the model '{OLLAMA_MODEL}' is available.",
+              file=sys.stderr)
         return None
+
 
 def parse_ollama_response(analysis_text: str) -> Tuple[str, str, List[str]]:
     """
     Parse the response from Ollama into components.
-    
+
     Args:
         analysis_text: The raw text response from Ollama
-        
+
     Returns:
         Tuple of (filename_base, description, labels_list)
     """
@@ -261,7 +271,9 @@ def parse_ollama_response(analysis_text: str) -> Tuple[str, str, List[str]]:
 
         # Clean up labels - ensure we never return None for labels
         if suggested_labels_str:
-            labels_list = [label.strip().lower() for label in suggested_labels_str.split(',') if label.strip()]
+            labels_list = [label.strip().lower()
+                           for label in suggested_labels_str.split(',')
+                           if label.strip()]
         else:
             labels_list = ["no_labels_generated"]
 
@@ -273,19 +285,22 @@ def parse_ollama_response(analysis_text: str) -> Tuple[str, str, List[str]]:
         print(f"--- Raw Ollama Response ---\n{analysis_text}\n--------------------------")
         return "analysis_failed", "Failed to parse description.", ["parsing_error"]
 
-def analyze_image_with_ollama(image_path: str) -> Tuple[Optional[str], Optional[str], List[str], Optional[str]]:
+
+def analyze_image_with_ollama(
+    image_path: str
+) -> Tuple[Optional[str], Optional[str], List[str], Optional[str]]:
     """
     Analyzes an image using Ollama and the specified model.
-    
+
     Args:
         image_path: Path to the image file
-        
+
     Returns:
-        Tuple of (suggested_filename_base, suggested_description, suggested_labels_list, image_format)
-             or (None, None, [], None) on failure.
+        Tuple of (suggested_filename_base, suggested_description,
+                 suggested_labels_list, image_format) or (None, None, [], None) on failure.
     """
     print(f"Analysing '{os.path.basename(image_path)}'...")
-    
+
     # Prepare the image data
     base64_image, image_format = prepare_image_data(image_path)
     if base64_image is None:
@@ -295,43 +310,48 @@ def analyze_image_with_ollama(image_path: str) -> Tuple[Optional[str], Optional[
     analysis_text = call_ollama_api(base64_image)
     if analysis_text is None:
         return None, None, [], image_format
-    
+
     # Parse the response
     filename_base, description, labels = parse_ollama_response(analysis_text)
     return filename_base, description, labels, image_format
 
+
 def check_exiftool_available() -> bool:
     """
     Check if exiftool is available in the path.
-    
+
     Returns:
         True if exiftool is available, False otherwise
     """
     exiftool_path = shutil.which("exiftool")
     if not exiftool_path:
-        print("Error: 'exiftool' command not found. Cannot write metadata or rename.", file=sys.stderr)
+        print("Error: 'exiftool' command not found. Cannot write metadata or rename.",
+              file=sys.stderr)
         return False
     return True
 
-def write_metadata(file_path: str, description: Optional[str], labels: List[str]) -> bool:
+
+def write_metadata(file_path: str, description: str, labels: List[str]) -> bool:
     """
     Write metadata to an image file using exiftool.
-    
+
     Args:
         file_path: Path to the image file
         description: Description to write
         labels: List of labels/keywords to write
-        
+
     Returns:
         True if successful, False otherwise
     """
     if not check_exiftool_available():
         return False
-        
-    cmd = [shutil.which("exiftool"), "-overwrite_original", "-q"] # -q for quieter operation
+
+    cmd = [shutil.which("exiftool"), "-overwrite_original", "-q"]  # -q for quieter operation
     tags_to_write = []
-    
-    if description and description not in ("No description generated.", "Failed to parse description."):
+
+    if description and description not in (
+        "No description generated.", "Failed to parse description."
+    ):
         tags_to_write.append(f"-XMP-dc:Description={description}")
         tags_to_write.append(f"-IPTC:Caption-Abstract={description}")
 
@@ -344,7 +364,7 @@ def write_metadata(file_path: str, description: Optional[str], labels: List[str]
     if not tags_to_write:
         print("No valid metadata suggestions to write.")
         return True  # No data to write counts as 'success'
-        
+
     cmd.extend(tags_to_write)
     cmd.append(file_path)
 
@@ -353,13 +373,13 @@ def write_metadata(file_path: str, description: Optional[str], labels: List[str]
         # Add proper charset handling for non-english characters
         env = os.environ.copy()
         env['EXIFTOOL_CHARSET'] = 'UTF8'
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True, 
-                              encoding='utf-8', errors='replace', env=env)
+        result = subprocess.run(cmd, check=True, capture_output=True, text=True,
+                                encoding='utf-8', errors='replace', env=env)
         print("Exiftool metadata write successful.")
         if result.stderr.strip():
             print(f"Exiftool warnings:\n{result.stderr.strip()}", file=sys.stderr)
         return True
-        
+
     except subprocess.CalledProcessError as e:
         print(f"Error running exiftool: {e}", file=sys.stderr)
         print(f"Command: {' '.join(e.cmd)}", file=sys.stderr)
@@ -369,10 +389,11 @@ def write_metadata(file_path: str, description: Optional[str], labels: List[str]
         if e.stderr:
             print(f"Error Output:\n{e.stderr}", file=sys.stderr)
         return False
-        
+
     except Exception as e:
         print(f"An unexpected error occurred while running exiftool: {e}", file=sys.stderr)
         return False
+
 
 def rename_file(original_path: str, new_filename_base: str, force: bool = False) -> Tuple[bool, str]:
     """
@@ -507,18 +528,23 @@ def process_single_file(file_path: str, write_changes: bool, force_write: bool) 
     print(f"--- Finished Processing: {os.path.basename(final_path)} ---")
     return success, final_path
 
+
 def parse_arguments() -> argparse.Namespace:
     """
     Parse command line arguments.
-    
+
     Returns:
         Parsed arguments
     """
     parser = argparse.ArgumentParser(
-        description=f"Suggest filename and metadata for images using Ollama ({OLLAMA_MODEL}). Processes a single file or a directory.",
+        description=(f"Suggest filename and metadata for images using Ollama "
+                     f"({OLLAMA_MODEL}). Processes a single file or a directory."),
         formatter_class=argparse.RawTextHelpFormatter
     )
-    parser.add_argument("input_path", help="Path to the image file or a directory containing images.")
+    parser.add_argument(
+        "input_path",
+        help="Path to an image file or a directory containing image files."
+    )
     parser.add_argument(
         "-w", "--write",
         action="store_true",
@@ -536,16 +562,16 @@ def parse_arguments() -> argparse.Namespace:
     )
     return parser.parse_args()
 
-def get_files_to_process(input_path: str) -> Tuple[List[str], bool, int]:
+
+def get_files_to_process(input_path: str) -> Tuple[List[str], bool]:
     """
-    Get list of files to process based on input path.
-    
+    Get list of files to process from the input path.
+
     Args:
         input_path: Path to file or directory
-        
+
     Returns:
-        Tuple of (files_list, is_directory, error_code)
-        error_code is 0 for success, 1 for error
+        Tuple of (list of file paths, is_directory flag)
     """
     abs_input_path = os.path.abspath(input_path)
     files_to_process = []
@@ -572,7 +598,7 @@ def get_files_to_process(input_path: str) -> Tuple[List[str], bool, int]:
                 _, ext = os.path.splitext(item)
                 if ext.lstrip('.').lower() in METADATA_SUPPORTING_FORMATS_LOWER:
                     files_to_process.append(item_path)
-                    found_count += 1
+                    found_count = found_count + 1
         print(f"Found {found_count} supported image files.")
         if not files_to_process:
             print("No supported image files found in the directory.")
@@ -600,7 +626,7 @@ def confirm_write_operation(files: List[str], is_dir: bool, input_path: str, for
     """
     should_write = force or len(files) > 0
     proceed_with_write = force
-    
+
     if should_write and not force:
         print(f"\n*** WARNING: You requested to write changes! ***")
         if is_dir:
@@ -608,7 +634,7 @@ def confirm_write_operation(files: List[str], is_dir: bool, input_path: str, for
         else:
             print(f"  - Metadata will be written to: '{os.path.basename(files[0])}'")
             print(f"  - File may be RENAMED based on analysis.")
-            
+
         print(f"  - Existing files with the new name will cause an error unless --force is used.")
         
         try:
@@ -631,21 +657,23 @@ def confirm_write_operation(files: List[str], is_dir: bool, input_path: str, for
     elif force:
         print(f"\n*** WARNING: --force specified! Applying changes WITHOUT confirmation! ***")
         print(f"***          Existing target files during rename WILL BE OVERWRITTEN! ***")
-        
+
     return should_write, proceed_with_write
+
 
 def main() -> int:
     """
     Main program execution.
-    
+
     Returns:
         Exit code (0 for success, 1 for failure)
     """
     args = parse_arguments()
     setup_logging()
-    
+
     # Get files to process
-    files_to_process, is_dir, error_code = get_files_to_process(args.input_path)
+    files_to_process, is_dir = get_files_to_process(args.input_path)
+    error_code = 0  # No longer returned from get_files_to_process
     if error_code != 0:
         return error_code
     
@@ -653,7 +681,7 @@ def main() -> int:
     if not files_to_process:
         print("No files to process.")
         return 0
-        
+
     # If --yes option is provided, treat it like force but just for confirmation
     force_confirmation = args.force or args.yes
     
@@ -665,7 +693,7 @@ def main() -> int:
     total_files = len(files_to_process)
     success_count = 0
     fail_count = 0
-    
+
     # Break the complex function into smaller parts by using
     # separate processing for batch and single files
     if total_files == 0:
@@ -680,19 +708,22 @@ def main() -> int:
         file_success, _ = process_single_file(file_path, write_this_file, args.force)
 
         if file_success:
-            success_count += 1
+            success_count = success_count + 1
         else:
-            fail_count += 1
+            fail_count = fail_count + 1
 
     # Final Summary
-    print("\n" + "="*30)
-    print("Processing Complete.")
+    print("\n" + "=" * 30)
+    print(f"Processing Complete: {args.input_path}")
     print(f"Total files processed: {total_files}")
     print(f"Successful: {success_count}")
     print(f"Failed:     {fail_count}")
-    print("="*30)
+    print("=" * 30)
 
     return 1 if fail_count > 0 else 0
 
+
+
 if __name__ == "__main__":
     sys.exit(main())
+
