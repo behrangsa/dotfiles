@@ -36,7 +36,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-echo -e "${BLUE}Installing memusg system memory visualization tool...${NC}"
+echo -e "${BLUE}Installing memviz system memory visualization tool...${NC}"
 
 # Create installation directory if it doesn't exist
 if [ ! -d "$INSTALL_DIR" ]; then
@@ -140,8 +140,8 @@ if [ -L "${INSTALL_DIR}/memusg" ]; then
     rm "${INSTALL_DIR}/memusg"
 fi
 
-ln -s "${SCRIPT_DIR}/memusg.py" "${INSTALL_DIR}/memusg"
-echo -e "${GREEN}Symlink created: ${INSTALL_DIR}/memusg -> ${SCRIPT_DIR}/memusg.py${NC}"
+ln -s "${SCRIPT_DIR}/memviz.py" "${INSTALL_DIR}/memviz"
+echo -e "${GREEN}Symlink created: ${INSTALL_DIR}/memviz -> ${SCRIPT_DIR}/memviz.py${NC}"
 
 # Check if ~/.local/bin is in PATH
 if [[ ":$PATH:" != *":${INSTALL_DIR}:"* ]]; then
@@ -150,12 +150,12 @@ if [[ ":$PATH:" != *":${INSTALL_DIR}:"* ]]; then
     echo "Add the following line to your shell configuration file (~/.bashrc, ~/.zshrc, etc.):"
     echo "export PATH=\"\$PATH:${INSTALL_DIR}\""
 else
-    echo -e "${GREEN}Installation successful! You can now use 'memusg' command.${NC}"
+    echo -e "${GREEN}Installation successful! You can now use 'memviz' command.${NC}"
 fi
 
 echo
 echo -e "${BLUE}Usage examples:${NC}"
-echo -e "  memusg                                  # Basic memory usage visualization"
-echo -e "  memusg --group-by username              # Group processes by username"
-echo -e "  memusg --min-memory 100 --top 20        # Show top 20 processes using >100MB"
-echo -e "  memusg --help                           # Show all options"
+echo -e "  memviz                                  # Basic memory usage visualization"
+echo -e "  memviz --group-by username              # Group processes by username"
+echo -e "  memviz --min-memory 100 --top 20        # Show top 20 processes using >100MB"
+echo -e "  memviz --help                           # Show all options"

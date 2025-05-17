@@ -1,4 +1,4 @@
-# MemUSG - System Memory Usage Visualizer
+# MemViz - System Memory Usage Visualizer
 
 A powerful tool for visualizing and analyzing system memory usage through interactive treemaps.
 
@@ -6,7 +6,7 @@ A powerful tool for visualizing and analyzing system memory usage through intera
 
 ## Overview
 
-MemUSG creates detailed, interactive visualizations of your system's memory usage, showing which processes are consuming memory resources. The tool generates treemaps where each rectangle represents a process, with the size proportional to its memory footprint.
+MemViz creates detailed, interactive visualizations of your system's memory usage, showing which processes are consuming memory resources. The tool generates treemaps where each rectangle represents a process, with the size proportional to its memory footprint.
 
 ## Features
 
@@ -43,29 +43,29 @@ The script will:
 
 ```bash
 # Generate and display a memory usage treemap
-memusg
+memviz
 
 # Save the treemap to a specific file
-memusg -o memory_usage.png
+memviz -o memory_usage.png
 ```
 
 ### Advanced Options
 
 ```bash
 # Group processes by username with custom colors
-memusg --group-by username --color-by-user
+memviz --group-by username --color-by-user
 
 # Export detailed data to JSON and CSV
-memusg --json memory_data.json --csv memory_data.csv
+memviz --json memory_data.json --csv memory_data.csv
 
 # Focus on the top memory consumers
-memusg --top 30 --min-memory 50
+memviz --top 30 --min-memory 50
 
 # Exclude specific processes or users
-memusg --exclude-pids 1234,5678 --exclude-users system,daemon
+memviz --exclude-pids 1234,5678 --exclude-users system,daemon
 
 # Run in headless mode (e.g., on servers without GUI)
-memusg --headless -o server_memory.png --no-display
+memviz --headless -o server_memory.png --no-display
 ```
 
 ## Command Line Options
@@ -97,28 +97,28 @@ memusg --headless -o server_memory.png --no-display
 
 ```bash
 # Generate a standard memory visualization
-memusg
+memviz
 ```
 
 ### Focus on Memory-Intensive Applications
 
 ```bash
 # Show only processes using at least 100MB
-memusg --min-memory 100 --top 20
+memviz --min-memory 100 --top 20
 ```
 
 ### User-Based Analysis
 
 ```bash
 # Group and color processes by user
-memusg --group-by username --color-by-user --colormap Set1
+memviz --group-by username --color-by-user --colormap Set1
 ```
 
 ### Non-Interactive Server Analysis
 
 ```bash
 # Generate visualization on a headless server
-memusg --headless --no-display -o /path/to/result.png
+memviz --headless --no-display -o /path/to/result.png
 ```
 
 ## License

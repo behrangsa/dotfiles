@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-RAM Usage Visualization Tool
+MemViz - RAM Usage Visualization Tool
 
 Generates a treemap visualization of system memory usage by process.
 This script collects memory information for all running processes
@@ -29,7 +29,7 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
-logger = logging.getLogger("memusg")
+logger = logging.getLogger("memviz")
 
 
 class ProcessMemoryInfo:
@@ -545,7 +545,7 @@ def parse_args() -> argparse.Namespace:
         Parsed arguments
     """
     parser = argparse.ArgumentParser(
-        description="Visualize system memory usage by process as a treemap."
+        description="MemViz - Visualize system memory usage by process as a treemap."
     )
 
     parser.add_argument(
@@ -683,8 +683,8 @@ def handle_cli_args() -> Tuple[argparse.Namespace, Set[int], Set[str]]:
     """
     # Handle version display before any other operations
     if "--version" in sys.argv:
-        print("memusg v1.1.0")
-        sys.exit(0)
+            print("memviz v1.2.0")
+            sys.exit(0)
 
     # Check for headless mode before importing matplotlib
     if "--headless" in sys.argv or os.environ.get("DISPLAY") is None:
@@ -801,7 +801,7 @@ def generate_outputs(args: argparse.Namespace,
         except Exception as e:
             logger.warning(f"Could not display visualization: {e}")
 
-    logger.info("RAM usage visualization completed successfully")
+    logger.info("MemViz visualization completed successfully")
     return 0
 
 
