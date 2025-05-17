@@ -68,7 +68,7 @@ The configuration uses several helper scripts:
 
 ## Example Display
 
-![Conky Dashboard](dotfiles/conky/conky.gif)
+![Conky Dashboard](./conky.gif)
 
 ## Customization
 
