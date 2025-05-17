@@ -1,0 +1,48 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310']
+include = '\.pyi?$'
+
+[tool.isort]
+profile = "black"
+line_length = 100
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+
+[tool.pylint]
+disable = [
+    "C0103", # variable naming convention
+    "C0111", # missing docstring
+    "C0330", # bad continuation
+    "C1801", # len-as-condition
+    "R0903", # too-few-public-methods
+    "W0511", # fixme
+    "W1202", # logging-format-interpolation
+    "W0212", # protected-access
+    "F0541", # f-string-missing-placeholders
+]
+good-names = ["i", "j", "k", "ex", "id", "_", "f", "x", "y", "z"]
+max-line-length = 100
+
+[tool.pyright]
+reportMissingImports = true
+reportMissingTypeStubs = false
+
+[tool.flake8]
+max-line-length = 100
+ignore = ["F541", "E203"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+select = ["E", "F", "W"]
+ignore = ["F541"]  # f-string-missing-placeholders
