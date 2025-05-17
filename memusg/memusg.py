@@ -15,6 +15,20 @@ import argparse
 from pathlib import Path
 from typing import Dict, List, Tuple, Optional, Any, Set, Union, cast, TypeVar, Callable, Sequence
 
+# Define module-level variables to avoid unbound errors
+psutil = None
+matplotlib = None
+plt = None
+Rectangle = None
+Figure = None
+Axes = None
+Normalize = None
+ScalarMappable = None
+squarify = None
+np = None
+ndarray = None
+Process = None
+
 # Check for required dependencies
 missing_deps = []
 try:
@@ -22,6 +36,10 @@ try:
     from psutil import Process  # type: ignore
 except ImportError:
     missing_deps.append("psutil")
+else:
+    # Only executed if import succeeds
+    psutil = psutil
+    Process = Process
 
 try:
     import matplotlib
@@ -33,17 +51,31 @@ try:
     from matplotlib.cm import ScalarMappable
 except ImportError:
     missing_deps.append("matplotlib")
+else:
+    # Only executed if import succeeds
+    matplotlib = matplotlib
+    plt = plt
+    Rectangle = Rectangle
+    Figure = Figure
+    Axes = Axes
+    Normalize = Normalize
+    ScalarMappable = ScalarMappable
 
 try:
     import squarify  # type: ignore
 except ImportError:
     missing_deps.append("squarify")
+else:
+    squarify = squarify
 
 try:
     import numpy as np
     from numpy import ndarray
 except ImportError:
     missing_deps.append("numpy")
+else:
+    np = np
+    ndarray = ndarray
 
 # Exit if any dependencies are missing
 if missing_deps:
@@ -262,7 +294,7 @@ def create_treemap(
     dpi: int = 100,
     show_user_colors: bool = False,
     top_processes: Optional[int] = None
-) -> Figure:
+) -> "Figure":  # Use string literal for forward reference
     """
     Create a treemap visualization of process memory usage.
     
@@ -814,6 +846,10 @@ def main() -> int:
     except KeyboardInterrupt:
         logger.info("Process interrupted by user")
         return 130
+    except NameError as e:
+        logger.error(f"Module import error: {e}")
+        print("This likely means a required module wasn't properly initialized.")
+        return 1
     except Exception as e:
         logger.error(f"Error: {e}", exc_info=True)
         return 1
