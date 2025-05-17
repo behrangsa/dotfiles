@@ -529,6 +529,11 @@ def parse_arguments() -> argparse.Namespace:
         action="store_true",
         help="Force write/rename without confirmation. Implies -w. Overwrites existing target files during rename. *** Use with extreme caution! ***"
     )
+    parser.add_argument(
+        "--yes",
+        action="store_true",
+        help="Automatically answer 'yes' to all prompts. Useful for scripting."
+    )
     return parser.parse_args()
 
 def get_files_to_process(input_path: str) -> Tuple[List[str], bool, int]:
@@ -597,7 +602,7 @@ def confirm_write_operation(files: List[str], is_dir: bool, input_path: str, for
     proceed_with_write = force
     
     if should_write and not force:
-        print("\n*** WARNING: You requested to write changes! ***")
+        print(f"\n*** WARNING: You requested to write changes! ***")
         if is_dir:
             print(f"This will attempt to modify {len(files)} file(s) in '{input_path}'.")
         else:
@@ -605,12 +610,24 @@ def confirm_write_operation(files: List[str], is_dir: bool, input_path: str, for
             print(f"  - File may be RENAMED based on analysis.")
             
         print(f"  - Existing files with the new name will cause an error unless --force is used.")
-        confirm = input("Proceed with writing changes? (yes/no): ").strip().lower()
-        if confirm == 'yes':
-            proceed_with_write = True
-        else:
-            print("Write operation cancelled by user.")
+        
+        try:
+            # Check if running in an interactive environment
+            if sys.stdin.isatty():
+                confirm = input("Proceed with writing changes? (yes/no): ").strip().lower()
+                if confirm == 'yes':
+                    proceed_with_write = True
+                else:
+                    print("Write operation cancelled by user.")
+                    should_write = False
+            else:
+                # Non-interactive mode - don't proceed with writing
+                print("Not running in interactive terminal. Use --force to write changes.")
+                should_write = False
+        except (EOFError, KeyboardInterrupt):
+            print("\nInput interrupted. Operation cancelled.")
             should_write = False
+            
     elif force:
         print(f"\n*** WARNING: --force specified! Applying changes WITHOUT confirmation! ***")
         print(f"***          Existing target files during rename WILL BE OVERWRITTEN! ***")
@@ -637,9 +654,12 @@ def main() -> int:
         print("No files to process.")
         return 0
         
+    # If --yes option is provided, treat it like force but just for confirmation
+    force_confirmation = args.force or args.yes
+    
     # Determine if writing should happen and get confirmation
     should_write, proceed_with_write = confirm_write_operation(
-        files_to_process, is_dir, args.input_path, args.force)
+        files_to_process, is_dir, args.input_path, force_confirmation)
 
     # Process the files
     total_files = len(files_to_process)
