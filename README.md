@@ -14,13 +14,15 @@ foundation of my Linux development environment.
 | **openai**   | Command-line interface for OpenAI API          | Python, rich, pygments   |
 | **npmrc**    | NPM configuration with security best practices | Node.js                  |
 | **mkfav**    | Generate favicon.ico from images               | Bash, ImageMagick        |
-| **memusg**   | Memory usage visualization (treemap)           | Python, psutil,          |
+| **memviz**   | Memory usage visualization (treemap)           | Python, psutil,          |
 |              |                                                | matplotlib, squarify     |
 | **imgsizes** | Image resizing utility                         | Python, ImageMagick      |
-| **imgfname** | AI-powered image metadata tagging              | Python, Ollama, exiftool |
+| **imgtag**   | AI-powered image metadata tagging              | Python, Ollama, exiftool |
 | **git**      | Git configuration                              | Git                      |
 | **emptybye** | Empty directory removal tool                   | Python 3                 |
 | **conky**    | System monitoring dashboard                    | Conky                    |
+| **thumbgen** | Thumbnail generation utility                   | Python, Pillow           |
+| **zed**      | Zed editor configuration                       | Zed                      |
 
 ## 🛠️ Installation
 
@@ -84,19 +86,19 @@ mkfav image.png custom_favicon.ico
 mkfav /path/to/image.jpg /path/to/output/favicon.ico
 ```
 
-### memusg
+### memviz
 
 ```bash
 # Usage
-memusg --output ~/ram_usage.png --csv ~/ram_usage.csv
+memviz --output ~/ram_usage.png --csv ~/ram_usage.csv
 ```
 
-### imgfname
+### imgtag
 
-```bash4
+```bash
 # AI-powered image organization
-imgfname ~/Pictures/001.jpg -w  # Analyze and write metadata
-imgfname ~/Photos/ -f           # Batch process with force overwrite
+imgtag ~/Pictures/001.jpg -w  # Analyze and write metadata
+imgtag ~/Photos/ -f           # Batch process with force overwrite
 ```
 
 ### emptybye
@@ -114,6 +116,19 @@ emptybye ~/Downloads/unsorted
 - Real-time system monitoring
 - Temperature, CPU, memory, and disk usage
 - Custom color scheme with transparency support
+
+### thumbgen
+
+```bash
+# Generate thumbnails for images
+bu-thumbgen ~/Pictures/album
+```
+
+### zed
+
+- Configuration files for Zed editor
+- Custom keybindings and themes
+- Optimized for Python, JavaScript, and Markdown editing
 
 ## 📄 License
 
