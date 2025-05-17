@@ -223,6 +223,134 @@ def get_truncated_text(text: str, max_length: int = 30) -> str:
     return text[:max_length-3] + '...'
 
 
+def _create_empty_figure() -> Tuple["Figure", Any]:
+    """Create an empty figure when no processes are available to visualize."""
+    fig, ax = plt.subplots(figsize=(8, 6))  # pyright: ignore[reportPossiblyUnboundVariable]
+    ax.text(0.5, 0.5, "No processes found meeting the minimum memory threshold",
+            ha='center', va='center', fontsize=14)
+    ax.axis('off')
+    return fig, ax
+
+
+def _get_colormap(cmap_name: str):
+    """Get colormap using the appropriate matplotlib API."""
+    try:
+        # Use the newer recommended API (for Matplotlib 3.7+)
+        if hasattr(plt, 'colormaps'):  # pyright: ignore[reportPossiblyUnboundVariable]
+            cmap = plt.colormaps[cmap_name]  # pyright: ignore[reportPossiblyUnboundVariable]
+        # Fallback for older Matplotlib versions
+        else:
+            cmap = plt.get_cmap(cmap_name)  # pyright: ignore[reportPossiblyUnboundVariable]
+    except Exception as e:
+        logger.warning(f"Error using preferred colormap API, falling back to older method: {e}")
+        cmap = plt.cm.get_cmap(cmap_name)  # pyright: ignore[reportPossiblyUnboundVariable]
+    return cmap
+
+
+def _get_colors_by_username(processes: List[ProcessMemoryInfo], cmap):
+    """Create colors based on unique usernames."""
+    usernames: List[str] = list(set(p.username for p in processes))
+    username_to_idx: Dict[str, int] = {name: i for i, name in enumerate(usernames)}
+    norm = Normalize(0, max(len(usernames) - 1, 1))  # pyright: ignore[reportPossiblyUnboundVariable]
+    colors = [cmap(norm(username_to_idx.get(p.username, 0))) for p in processes]
+    return colors, usernames, username_to_idx, norm
+
+
+def _get_colors_by_memory(processes: List[ProcessMemoryInfo], cmap):
+    """Create colors based on memory usage."""
+    sizes = [p.memory_mb for p in processes]
+    norm = Normalize(min(sizes) if len(sizes) > 1 else 0, max(sizes))  # pyright: ignore[reportPossiblyUnboundVariable]
+    colors = [cmap(norm(value)) for value in sizes]
+    return colors, norm
+
+
+def _add_details_to_rectangle(ax, rect, process: ProcessMemoryInfo, i: int, min_area_for_details: int):
+    """Add detailed info to large enough rectangles."""
+    width = getattr(rect, 'get_width', lambda: 0)()
+    height = getattr(rect, 'get_height', lambda: 0)()
+    area = width * height
+
+    if area <= min_area_for_details:
+        return
+
+    rx, ry = getattr(rect, 'get_xy', lambda: (0, 0))()
+    
+    # Add details with better formatting
+    details = [
+        f"{process.memory_mb:.1f} MB",
+        f"PID: {process.pid}"
+    ]
+
+    if process.username:
+        details.append(f"User: {process.username}")
+
+    # Calculate text position and add with shadow for better readability
+    text_y_positions = [ry + height/2 + (j - len(details)/2) * 12 for j in range(len(details))]
+
+    for j, (text, y_pos) in enumerate(zip(details, text_y_positions)):
+        # Shadow text for better readability
+        ax.text(
+            rx + width/2 + 1,
+            y_pos + 1,
+            text,
+            ha='center',
+            va='center',
+            fontsize=7,
+            color='black',
+            alpha=0.7
+        )
+
+        ax.text(
+            rx + width/2,
+            y_pos,
+            text,
+            ha='center',
+            va='center',
+            fontsize=7,
+            color='white',
+            fontweight='bold'
+        )
+
+
+def _create_title(ax, processes: List[ProcessMemoryInfo], system_memory: Dict[str, Any]):
+    """Create the title for the treemap with system information."""
+    ax.set_title(
+        f"RAM Usage Treemap - {len(processes)} Processes\n"
+        f"Total: {system_memory['total_gb']:.1f} GB | "
+        f"Used: {system_memory['used_gb']:.1f} GB ({system_memory['percent']}%) | "
+        f"Available: {system_memory['available_gb']:.1f} GB\n"
+        f"Swap: {system_memory['swap_total_gb']:.1f} GB total, "
+        f"{system_memory['swap_used_gb']:.1f} GB used ({system_memory['swap_percent']}%)",
+        fontsize=18,
+        fontweight='bold'
+    )
+
+
+def _add_user_legend(ax, username_to_idx: Dict[str, int], cmap, norm):
+    """Add a legend for user-based colors."""
+    handles = []
+    for username, idx in sorted(username_to_idx.items()):
+        color = cmap(norm(idx))
+        handles.append(Rectangle((0, 0), 1, 1, color=color, label=username or "unknown"))
+
+    ax.legend(
+        handles=handles,
+        title="Users",
+        loc='lower right',
+        fontsize=10,
+        title_fontsize=12
+    )
+
+
+def _add_memory_colorbar(fig, ax, cmap, norm):
+    """Add a colorbar for memory-based visualization."""
+    sm = ScalarMappable(cmap=cmap, norm=norm)  # pyright: ignore[reportPossiblyUnboundVariable]
+    sm.set_array(np.array([]))  # Explicit array for type checking
+    cbar = fig.colorbar(sm, ax=ax, orientation='vertical', shrink=0.6, pad=0.02)
+    cbar.set_label('Memory Usage (MB)', fontsize=14)
+    cbar.ax.tick_params(labelsize=12)
+
+
 def create_treemap(
     processes: List[ProcessMemoryInfo],
     system_memory: Dict[str, Any],
@@ -251,10 +379,7 @@ def create_treemap(
     """
     if not processes:
         logger.warning("No processes to visualize")
-        fig, ax = plt.subplots(figsize=(8, 6))
-        ax.text(0.5, 0.5, "No processes found meeting the minimum memory threshold",
-                ha='center', va='center', fontsize=14)
-        ax.axis('off')
+        fig, _ = _create_empty_figure()
         return fig
 
     # Limit to top N processes if specified
@@ -270,30 +395,15 @@ def create_treemap(
     fig, ax = plt.subplots(figsize=figsize)  # pyright: ignore[reportPossiblyUnboundVariable]
     plt.subplots_adjust(left=0.05, right=0.95, top=0.95, bottom=0.05)  # pyright: ignore[reportPossiblyUnboundVariable]
 
-    # Create color mapping
-    try:
-        # Use the newer recommended API (for Matplotlib 3.7+)
-        if hasattr(plt, 'colormaps'):  # pyright: ignore[reportPossiblyUnboundVariable]
-            cmap = plt.colormaps[cmap_name]  # pyright: ignore[reportPossiblyUnboundVariable]
-        # Fallback for older Matplotlib versions
-        else:
-            cmap = plt.get_cmap(cmap_name)  # pyright: ignore[reportPossiblyUnboundVariable]
-    except Exception as e:
-        logger.warning(f"Error using preferred colormap API, falling back to older method: {e}")
-        cmap = plt.cm.get_cmap(cmap_name)
-
+    # Get colormap
+    cmap = _get_colormap(cmap_name)
+    
     # Determine colors based on strategy
+    username_to_idx = {}
     if show_user_colors:
-        # Create colors based on unique usernames
-        usernames: List[str] = list(set(p.username for p in processes))
-        username_to_idx: Dict[str, int] = {name: i for i, name in enumerate(usernames)}
-        norm = Normalize(0, max(len(usernames) - 1, 1))  # pyright: ignore[reportPossiblyUnboundVariable]
-        colors = [cmap(norm(username_to_idx.get(p.username, 0))) for p in processes]
+        colors, usernames, username_to_idx, norm = _get_colors_by_username(processes, cmap)
     else:
-        # Color by memory usage
-        norm = Normalize(min(sizes) if len(sizes) > 1 else 0, max(sizes))  # pyright: ignore[reportPossiblyUnboundVariable]
-        colors = [cmap(norm(value)) for value in sizes]
-        username_to_idx: Dict[str, int] = {}
+        colors, norm = _get_colors_by_memory(processes, cmap)
 
     # Plot treemap
     try:
@@ -312,88 +422,20 @@ def create_treemap(
     # Add details to large enough rectangles
     rects = ax.patches
     for i, rect in enumerate(rects):
-        # Use matplotlib's get_width/height methods which should be available on Rectangles (patches)
-        # These are dynamically added by matplotlib, so we need to use getattr to satisfy mypy
-        width = getattr(rect, 'get_width', lambda: 0)()
-        height = getattr(rect, 'get_height', lambda: 0)()
-        area = width * height
-
-        if area > min_area_for_details and i < len(processes):
-            rx, ry = getattr(rect, 'get_xy', lambda: (0, 0))()
-            process = processes[i]
-
-            # Add details with better formatting
-            details = [
-                f"{process.memory_mb:.1f} MB",
-                f"PID: {process.pid}"
-            ]
-
-            if process.username:
-                details.append(f"User: {process.username}")
-
-            # Calculate text position and add with shadow for better readability
-            text_y_positions = [ry + height/2 + (j - len(details)/2) * 12 for j in range(len(details))]
-
-            for j, (text, y_pos) in enumerate(zip(details, text_y_positions)):
-                # Shadow text for better readability
-                ax.text(
-                    rx + width/2 + 1,
-                    y_pos + 1,
-                    text,
-                    ha='center',
-                    va='center',
-                    fontsize=7,
-                    color='black',
-                    alpha=0.7
-                )
-
-                ax.text(
-                    rx + width/2,
-                    y_pos,
-                    text,
-                    ha='center',
-                    va='center',
-                    fontsize=7,
-                    color='white',
-                    fontweight='bold'
-                )
+        if i < len(processes):
+            _add_details_to_rectangle(ax, rect, processes[i], i, min_area_for_details)
 
     # Configure axes
     ax.axis('off')
 
     # Add title with more detailed information
-    ax.set_title(
-        f"RAM Usage Treemap - {len(processes)} Processes\n"
-        f"Total: {system_memory['total_gb']:.1f} GB | "
-        f"Used: {system_memory['used_gb']:.1f} GB ({system_memory['percent']}%) | "
-        f"Available: {system_memory['available_gb']:.1f} GB\n"
-        f"Swap: {system_memory['swap_total_gb']:.1f} GB total, "
-        f"{system_memory['swap_used_gb']:.1f} GB used ({system_memory['swap_percent']}%)",
-        fontsize=18,
-        fontweight='bold'
-    )
+    _create_title(ax, processes, system_memory)
 
-    # Add legend for user colors if enabled
-    if show_user_colors and 'usernames' in locals() and 'username_to_idx' in locals():
-        handles = []
-        for username, idx in sorted(username_to_idx.items()):
-            color = cmap(norm(idx))
-            handles.append(Rectangle((0, 0), 1, 1, color=color, label=username or "unknown"))
-
-        ax.legend(
-            handles=handles,
-            title="Users",
-            loc='lower right',
-            fontsize=10,
-            title_fontsize=12
-        )
+    # Add legend or colorbar based on visualization strategy
+    if show_user_colors and username_to_idx:
+        _add_user_legend(ax, username_to_idx, cmap, norm)
     else:
-        # Add colorbar for memory usage
-        sm = ScalarMappable(cmap=cmap, norm=norm)  # pyright: ignore[reportPossiblyUnboundVariable]
-        sm.set_array(np.array([]))  # Explicit array for type checking
-        cbar = fig.colorbar(sm, ax=ax, orientation='vertical', shrink=0.6, pad=0.02)
-        cbar.set_label('Memory Usage (MB)', fontsize=14)
-        cbar.ax.tick_params(labelsize=12)
+        _add_memory_colorbar(fig, ax, cmap, norm)
 
     fig.tight_layout()
     return fig
