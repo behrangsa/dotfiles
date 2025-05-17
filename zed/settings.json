@@ -48,7 +48,7 @@
     "default_height": 480,
     "default_model": {
       "provider": "copilot_chat",
-      "model": "claude-3.7-sonnet-thought"
+      "model": "claude-3.7-sonnet"
     },
     "editor_model": {
       "provider": "copilot_chat",
