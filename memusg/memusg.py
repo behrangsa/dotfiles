@@ -13,12 +13,13 @@ import json
 import logging
 import argparse
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any, Set, Union, cast
+from typing import Dict, List, Tuple, Optional, Any, Set, Union, cast, TypeVar, Callable, Sequence
 
 # Check for required dependencies
 missing_deps = []
 try:
     import psutil  # type: ignore
+    from psutil import Process  # type: ignore
 except ImportError:
     missing_deps.append("psutil")
 
@@ -26,6 +27,10 @@ try:
     import matplotlib
     import matplotlib.pyplot as plt
     from matplotlib.patches import Rectangle
+    from matplotlib.figure import Figure
+    from matplotlib.axes import Axes
+    from matplotlib.colors import Normalize
+    from matplotlib.cm import ScalarMappable
 except ImportError:
     missing_deps.append("matplotlib")
 
@@ -36,6 +41,7 @@ except ImportError:
 
 try:
     import numpy as np
+    from numpy import ndarray
 except ImportError:
     missing_deps.append("numpy")
 
@@ -188,10 +194,11 @@ def group_processes_by_attribute(processes: List[ProcessMemoryInfo],
     if not attribute or attribute not in ('username',):
         return processes
     
+    # Type alias for group keys
     grouped_data: Dict[str, Dict[str, Any]] = {}
     
     for proc in processes:
-        key = getattr(proc, attribute, "unknown")
+        key = cast(str, getattr(proc, attribute, "unknown"))
         
         if not key or key == "":
             key = "unknown"
@@ -211,10 +218,11 @@ def group_processes_by_attribute(processes: List[ProcessMemoryInfo],
     grouped_processes = []
     
     for key, data in grouped_data.items():
+        process_list = cast(List[ProcessMemoryInfo], data['processes'])
         # Choose a representative PID from the group
-        if data['processes']:
+        if process_list:
             # Use the PID with highest memory usage
-            pid = max(data['processes'], key=lambda p: p.memory_mb).pid
+            pid = max(process_list, key=lambda p: p.memory_mb).pid
         else:
             pid = 0
             
@@ -222,7 +230,7 @@ def group_processes_by_attribute(processes: List[ProcessMemoryInfo],
             pid=pid,
             name=data['name'],
             memory_mb=data['memory_mb'],
-            username=data['username']
+            username=key if attribute == 'username' else ""
         ))
     
     # Sort by memory usage (descending)
@@ -254,7 +262,7 @@ def create_treemap(
     dpi: int = 100,
     show_user_colors: bool = False,
     top_processes: Optional[int] = None
-) -> plt.Figure:
+) -> Figure:
     """
     Create a treemap visualization of process memory usage.
     
@@ -307,13 +315,13 @@ def create_treemap(
     # Determine colors based on strategy
     if show_user_colors:
         # Create colors based on unique usernames
-        usernames = list(set(p.username for p in processes))
-        username_to_idx = {name: i for i, name in enumerate(usernames)}
-        norm = plt.Normalize(0, max(len(usernames) - 1, 1))
+        usernames: List[str] = list(set(p.username for p in processes))
+        username_to_idx: Dict[str, int] = {name: i for i, name in enumerate(usernames)}
+        norm = Normalize(0, max(len(usernames) - 1, 1))
         colors = [cmap(norm(username_to_idx.get(p.username, 0))) for p in processes]
     else:
         # Color by memory usage
-        norm = plt.Normalize(min(sizes) if len(sizes) > 1 else 0, max(sizes))
+        norm = Normalize(min(sizes) if len(sizes) > 1 else 0, max(sizes))
         colors = [cmap(norm(value)) for value in sizes]
     
     # Plot treemap
@@ -395,7 +403,7 @@ def create_treemap(
     )
     
     # Add legend for user colors if enabled
-    if show_user_colors and len(usernames) > 1:
+    if show_user_colors and 'usernames' in locals() and 'username_to_idx' in locals():
         handles = []
         for username, idx in sorted(username_to_idx.items()):
             color = cmap(norm(idx))
@@ -410,8 +418,8 @@ def create_treemap(
         )
     else:
         # Add colorbar for memory usage
-        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
-        sm.set_array([])
+        sm = ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array(np.array([]))  # Explicit array for type checking
         cbar = fig.colorbar(sm, ax=ax, orientation='vertical', shrink=0.6, pad=0.02)
         cbar.set_label('Memory Usage (MB)', fontsize=14)
         cbar.ax.tick_params(labelsize=12)
@@ -653,6 +661,137 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def handle_cli_args() -> Tuple[argparse.Namespace, Set[int], Set[str]]:
+    """
+    Process command line arguments and prepare filters.
+    
+    Returns:
+        Tuple of (parsed_args, excluded_pids, excluded_users)
+    """
+    # Handle version display before any other operations
+    if "--version" in sys.argv:
+        print("memusg v1.1.0")
+        sys.exit(0)
+    
+    # Check for headless mode before importing matplotlib
+    if "--headless" in sys.argv or os.environ.get("DISPLAY") is None:
+        logger.debug("Using Agg backend (headless mode)")
+        matplotlib.use("Agg")
+    
+    # Parse command-line arguments
+    args = parse_args()
+    
+    # Configure logging verbosity
+    if args.verbose:
+        logger.setLevel(logging.DEBUG)
+    
+    # Parse excluded PIDs
+    exclude_pids: Set[int] = set()
+    if args.exclude_pids:
+        for pid_str in args.exclude_pids.split(","):
+            try:
+                exclude_pids.add(int(pid_str.strip()))
+            except ValueError:
+                logger.warning(f"Invalid PID value: {pid_str}")
+    
+    # Parse excluded users
+    exclude_users: Set[str] = set()
+    if args.exclude_users:
+        for user in args.exclude_users.split(","):
+            user = user.strip()
+            if user:
+                exclude_users.add(user)
+                
+    return args, exclude_pids, exclude_users
+
+
+def process_data(args: argparse.Namespace, 
+                exclude_pids: Set[int], 
+                exclude_users: Set[str]) -> Tuple[List[ProcessMemoryInfo], Dict[str, Any]]:
+    """
+    Collect and process system data.
+    
+    Args:
+        args: Parsed command line arguments
+        exclude_pids: Set of PIDs to exclude
+        exclude_users: Set of usernames to exclude
+        
+    Returns:
+        Tuple of (process_list, system_memory_info)
+    """
+    # Collect process information
+    logger.info(f"Collecting process memory information (min threshold: {args.min_memory} MB)")
+    processes = collect_process_memory_info(
+        min_memory_mb=args.min_memory,
+        exclude_pids=exclude_pids,
+        exclude_users=exclude_users
+    )
+    logger.info(f"Found {len(processes)} processes using at least {args.min_memory} MB of memory")
+    
+    # Group processes if requested
+    if args.group_by != "none":
+        processes = group_processes_by_attribute(processes, args.group_by)
+        logger.info(f"Grouped processes by {args.group_by}, resulting in {len(processes)} groups")
+    
+    # Get system memory information
+    logger.info("Collecting system memory information")
+    system_memory = get_system_memory_info()
+    
+    return processes, system_memory
+
+
+def generate_outputs(args: argparse.Namespace, 
+                    processes: List[ProcessMemoryInfo], 
+                    system_memory: Dict[str, Any]) -> int:
+    """
+    Generate and save visualization and data outputs.
+    
+    Args:
+        args: Parsed command line arguments
+        processes: List of process information
+        system_memory: System memory information
+        
+    Returns:
+        Exit code (0 for success)
+    """
+    # Create visualization
+    logger.info("Creating treemap visualization")
+    fig = create_treemap(
+        processes=processes,
+        system_memory=system_memory,
+        figsize=(args.width, args.height),
+        cmap_name=args.colormap,
+        dpi=args.dpi,
+        show_user_colors=args.color_by_user,
+        top_processes=args.top
+    )
+    
+    # Save visualization
+    output_path = os.path.expanduser(args.output)
+    save_visualization(fig, output_path, dpi=args.dpi)
+    
+    # Export to CSV if requested
+    if not args.no_csv:
+        csv_path = os.path.expanduser(args.csv)
+        export_to_csv(processes, csv_path)
+    
+    # Export to JSON if requested
+    if not args.no_json:
+        json_path = os.path.expanduser(args.json)
+        export_to_json(processes, system_memory, json_path)
+        
+    # Display visualization if requested
+    if not args.no_display:
+        logger.info("Attempting to display visualization")
+        try:
+            plt.show()
+        except Exception as e:
+            logger.warning(f"Could not display visualization: {e}")
+    
+    logger.info("RAM usage visualization completed successfully")
+    return 0
+
+
 def main() -> int:
     """
     Main program entry point.
@@ -661,96 +800,16 @@ def main() -> int:
         Exit code (0 for success, non-zero for error)
     """
     try:
-        # Handle version display before any other operations
-        if "--version" in sys.argv:
-            print("memusg v1.1.0")
-            return 0
-        
-        # Check for headless mode before importing matplotlib
-        if "--headless" in sys.argv or os.environ.get("DISPLAY") is None:
-            logger.debug("Using Agg backend (headless mode)")
-            matplotlib.use("Agg")
-        
-        # Parse command-line arguments
-        args = parse_args()
-        
-        # Configure logging verbosity
-        if args.verbose:
-            logger.setLevel(logging.DEBUG)
+        # Process command line arguments
+        args, exclude_pids, exclude_users = handle_cli_args()
         
         logger.debug("Starting RAM usage visualization")
         
-        # Parse excluded PIDs
-        exclude_pids = set()
-        if args.exclude_pids:
-            for pid_str in args.exclude_pids.split(","):
-                try:
-                    exclude_pids.add(int(pid_str.strip()))
-                except ValueError:
-                    logger.warning(f"Invalid PID value: {pid_str}")
+        # Collect and process data
+        processes, system_memory = process_data(args, exclude_pids, exclude_users)
         
-        # Parse excluded users
-        exclude_users = set()
-        if args.exclude_users:
-            for user in args.exclude_users.split(","):
-                user = user.strip()
-                if user:
-                    exclude_users.add(user)
-        
-        # Collect process information
-        logger.info(f"Collecting process memory information (min threshold: {args.min_memory} MB)")
-        processes = collect_process_memory_info(
-            min_memory_mb=args.min_memory,
-            exclude_pids=exclude_pids,
-            exclude_users=exclude_users
-        )
-        logger.info(f"Found {len(processes)} processes using at least {args.min_memory} MB of memory")
-        
-        # Group processes if requested
-        if args.group_by != "none":
-            processes = group_processes_by_attribute(processes, args.group_by)
-            logger.info(f"Grouped processes by {args.group_by}, resulting in {len(processes)} groups")
-        
-        # Get system memory information
-        logger.info("Collecting system memory information")
-        system_memory = get_system_memory_info()
-        
-        # Create visualization
-        logger.info("Creating treemap visualization")
-        fig = create_treemap(
-            processes=processes,
-            system_memory=system_memory,
-            figsize=(args.width, args.height),
-            cmap_name=args.colormap,
-            dpi=args.dpi,
-            show_user_colors=args.color_by_user,
-            top_processes=args.top
-        )
-        
-        # Save visualization
-        output_path = os.path.expanduser(args.output)
-        save_visualization(fig, output_path, dpi=args.dpi)
-        
-        # Export to CSV if requested
-        if not args.no_csv:
-            csv_path = os.path.expanduser(args.csv)
-            export_to_csv(processes, csv_path)
-        
-        # Export to JSON if requested
-        if not args.no_json:
-            json_path = os.path.expanduser(args.json)
-            export_to_json(processes, system_memory, json_path)
-            
-        # Display visualization if requested
-        if not args.no_display:
-            logger.info("Attempting to display visualization")
-            try:
-                plt.show()
-            except Exception as e:
-                logger.warning(f"Could not display visualization: {e}")
-        
-        logger.info("RAM usage visualization completed successfully")
-        return 0
+        # Generate and save outputs
+        return generate_outputs(args, processes, system_memory)
         
     except KeyboardInterrupt:
         logger.info("Process interrupted by user")
