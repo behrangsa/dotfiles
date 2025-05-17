@@ -1,18 +1,47 @@
 {
-  "name": "Dotfiles Devcontainer",
+  "name": "Dotfiles Development Environment",
+  "dockerFile": "Dockerfile",
+  "forwardPorts": [],
+  "remoteUser": "vscode",
+  "containerUser": "vscode",
+  "updateRemoteUserUID": true,
   "features": {
     "ghcr.io/devcontainers/features/git:1": {
       "version": "latest",
       "ppa": true
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "moby": true
+    },
+    "ghcr.io/devcontainers-contrib/features/oh-my-zsh:0": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "esbenp.prettier-vscode",
+        "GitHub.copilot",
+        "GitHub.copilot-chat",
+        "GitHub.vscode-pull-request-github",
+        "GitHub.remotehub",
+        "eamodio.gitlens",
+        "yzhang.markdown-all-in-one",
+        "redhat.vscode-yaml",
+        "ms-azuretools.vscode-docker",
+        "timonwong.shellcheck",
+        "foxundermoon.shell-format"
+      ],
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "zsh",
+        "editor.formatOnSave": true,
+        "git.autofetch": true,
+        "files.trimTrailingWhitespace": true,
+        "files.insertFinalNewline": true,
+        "files.trimFinalNewlines": true
+      }
     }
   },
-  "extensions": [
-    "esbenp.prettier-vscode",
-    "GitHub.copilot",
-    "GitHub.vscode-pull-request-github",
-    "GitHub.remotehub"
-  ],
-  "build": {
-    "dockerfile": "Dockerfile"
-  }
+  "postCreateCommand": "echo 'Development container is ready!'",
+  "waitFor": "postCreateCommand"
 }
