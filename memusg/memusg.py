@@ -13,12 +13,12 @@ import json
 import logging
 import argparse
 from pathlib import Path
-from typing import Dict, List, Tuple, Optional, Any, Set, Union
+from typing import Dict, List, Tuple, Optional, Any, Set, Union, cast
 
 # Check for required dependencies
 missing_deps = []
 try:
-    import psutil
+    import psutil  # type: ignore
 except ImportError:
     missing_deps.append("psutil")
 
@@ -30,7 +30,7 @@ except ImportError:
     missing_deps.append("matplotlib")
 
 try:
-    import squarify
+    import squarify  # type: ignore
 except ImportError:
     missing_deps.append("squarify")
 
@@ -174,7 +174,7 @@ def get_system_memory_info() -> Dict[str, Any]:
 
 
 def group_processes_by_attribute(processes: List[ProcessMemoryInfo], 
-                                attribute: str = None) -> List[ProcessMemoryInfo]:
+                                attribute: Optional[str] = None) -> List[ProcessMemoryInfo]:
     """
     Group processes by a specified attribute.
     
@@ -333,12 +333,14 @@ def create_treemap(
     # Add details to large enough rectangles
     rects = ax.patches
     for i, rect in enumerate(rects):
-        width = rect.get_width()
-        height = rect.get_height()
+        # Use matplotlib's get_width/height methods which should be available on Rectangles (patches)
+        # These are dynamically added by matplotlib, so we need to use getattr to satisfy mypy
+        width = getattr(rect, 'get_width', lambda: 0)()
+        height = getattr(rect, 'get_height', lambda: 0)()
         area = width * height
         
         if area > min_area_for_details and i < len(processes):
-            rx, ry = rect.get_xy()
+            rx, ry = getattr(rect, 'get_xy', lambda: (0, 0))()
             process = processes[i]
             
             # Add details with better formatting
