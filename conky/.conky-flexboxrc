@@ -32,8 +32,8 @@ conky.config = {
     gap_x = 570,
     gap_y = 50,
     minimum_height = 1370,
-    minimum_width = 720,
-    maximum_width = 720,
+    minimum_width = 910,
+    maximum_width = 910,
 
     -- Performance settings
     no_buffers = true,
@@ -44,7 +44,7 @@ conky.config = {
     own_window_class = 'Conky',
     own_window_type = 'desktop',
     own_window_argb_visual = true,
-    own_window_argb_value = 240,
+    own_window_argb_value = 100,
     own_window_colour = '0D1016',
 
     -- Output settings
@@ -62,5 +62,5 @@ conky.config = {
 }
 
 conky.text = [[
-${image ./css-flexbox-poster.png -p 0,0 -s 720x1080}
+${image ./css-flexbox-poster.png -p 0,0 -s 910x1365}
 ]];

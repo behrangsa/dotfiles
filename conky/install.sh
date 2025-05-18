@@ -2,7 +2,7 @@
 # install.sh - Symlink conky configuration files from repository to home directory
 # This script creates symbolic links from the user's home directory to any conky
 # configuration files in this repository matching the pattern \.conky.*rc,
-# with error handling and safety checks.
+# and other necessary assets, with error handling and safety checks.
 
 set -euo pipefail
 
@@ -12,7 +12,7 @@ TARGET_DIR="$HOME"
 
 echo "Setting up Conky configuration files..."
 
-# Find all files in the repo's conky directory that match the pattern
+# Find all files in the repo's conky directory that match the pattern .conky*rc
 while IFS= read -r source_file; do
     if [ -z "$source_file" ]; then
         continue
@@ -49,6 +49,36 @@ while IFS= read -r source_file; do
         echo "Symlink already exists and is correct: $target_link -> $source_file"
     fi
 done < <(find "$SCRIPT_DIR" -maxdepth 1 -type f -name "\.conky*rc")
+
+# Symlink the css-flexbox-poster.png
+IMAGE_SOURCE_FILE="$SCRIPT_DIR/css-flexbox-poster.png"
+IMAGE_FILENAME=$(basename "$IMAGE_SOURCE_FILE")
+IMAGE_TARGET_LINK="$TARGET_DIR/$IMAGE_FILENAME"
+
+if [ ! -f "$IMAGE_SOURCE_FILE" ]; then
+    echo "Error: Source file $IMAGE_SOURCE_FILE does not exist." >&2
+else
+    # If the destination exists and is not a symlink, back it up
+    if [ -e "$IMAGE_TARGET_LINK" ] && [ ! -L "$IMAGE_TARGET_LINK" ]; then
+        BACKUP="$IMAGE_TARGET_LINK.backup.$(date +%Y%m%d%H%M%S)"
+        echo "Backing up existing $IMAGE_TARGET_LINK to $BACKUP"
+        mv "$IMAGE_TARGET_LINK" "$BACKUP"
+    fi
+
+    # If the symlink exists but points elsewhere, remove it
+    if [ -L "$IMAGE_TARGET_LINK" ] && [ "$(readlink "$IMAGE_TARGET_LINK")" != "$IMAGE_SOURCE_FILE" ]; then
+        echo "Removing incorrect symlink at $IMAGE_TARGET_LINK"
+        rm "$IMAGE_TARGET_LINK"
+    fi
+
+    # Create the symlink if it doesn't exist or was removed
+    if [ ! -L "$IMAGE_TARGET_LINK" ]; then
+        ln -s "$IMAGE_SOURCE_FILE" "$IMAGE_TARGET_LINK"
+        echo "Symlink created: $IMAGE_TARGET_LINK -> $IMAGE_SOURCE_FILE"
+    else
+        echo "Symlink already exists and is correct: $IMAGE_TARGET_LINK -> $IMAGE_SOURCE_FILE"
+    fi
+fi
 
 # Make sure our utility scripts are executable and symlinked to ~/.local/bin
 bin_dir="$HOME/.local/bin"

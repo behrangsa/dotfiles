@@ -1,6 +1,7 @@
 conky.config = {
     -- Misc settings
     background = true,
+    out_to_wayland = true,
 
     -- Window settings
     alignment = 'top_left',
@@ -29,9 +30,9 @@ conky.config = {
     imlib_cache_size = 0,
 
     -- Window position and size
-    gap_x = 17,
-    gap_y = 50,
-    minimum_height = 1370,
+    gap_x = 30,
+    gap_y = 60,
+    minimum_height = 1350,
     minimum_width = 500,
     maximum_width = 500,
 
@@ -46,7 +47,7 @@ conky.config = {
     own_window_class = 'Conky',
     own_window_type = 'desktop',
     own_window_argb_visual = true,
-    own_window_argb_value = 255,
+    own_window_argb_value = 100,
     own_window_colour = '0D1016',
 
     -- Output settings
@@ -58,13 +59,16 @@ conky.config = {
     show_graph_scale = false,
     stippled_borders = 0,
 
+    default_color = '55baa2',
+    draw_borders = true,
+    border_width = 10,
+
     -- Custom colors for graphs/bars
     -- These are still useful for setting default_color or for use with ${color ...}
     color1  = '00FFFF',  -- cyan (e.g., titles)
     color2  = '00FF00',  -- green (e.g., normal state)
     color3  = 'FF0000',  -- red (e.g., high usage, warnings)
-    color4  = '33CCFF',  -- light blue (e.g., CPU graph)
-    colors1 = '00FFFF',  -- sensor color 1 (
+    color4  = '33CCFF'  -- light blue (e.g., CPU graph)
 }
 
 conky.text = [[
