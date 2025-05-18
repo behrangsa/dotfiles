@@ -1,0 +1,66 @@
+conky.config = {
+    -- Misc settings
+    background = true,
+    out_to_wayland = true,
+
+    -- Window settings
+    alignment = 'top_left',
+    double_buffer = true,
+
+    -- Border settings
+    border_inner_margin = 0,
+    border_outer_margin = 0,
+    draw_borders = true,
+
+    -- Text and color settings
+    default_color = '0D1016',
+    default_outline_color = white,
+    default_shade_color = white,
+    draw_outline = false,
+    draw_shades = false,
+    draw_graph_borders = true,
+    extra_newline = false,
+    font = 'Maple Mono NF:size=10',
+    uppercase = false,
+    use_spacer = 'none',
+    use_xft = true,
+
+    -- Image settings
+    imlib_cache_size = 0,
+
+    -- Window position and size
+    gap_x = 570,
+    gap_y = 50,
+    minimum_height = 1370,
+    minimum_width = 720,
+    maximum_width = 720,
+
+    -- Performance settings
+    no_buffers = true,
+    update_interval = 5,
+
+    -- Window properties
+    own_window = true,
+    own_window_class = 'Conky',
+    own_window_type = 'desktop',
+    own_window_argb_visual = true,
+    own_window_argb_value = 240,
+    own_window_colour = '0D1016',
+
+    -- Output settings
+    out_to_console = false,
+    out_to_ncurses = false,
+    out_to_stderr = false,
+    out_to_x = true,
+    show_graph_range = false,
+    show_graph_scale = false,
+    stippled_borders = 0,
+
+    default_color = '55baa2',
+    draw_borders = true,
+    border_width = 10
+}
+
+conky.text = [[
+${image ./css-flexbox-poster.png -p 0,0 -s 720x1080}
+]];
