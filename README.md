@@ -17,6 +17,7 @@ foundation of my Linux development environment.
 | **memviz**   | Memory usage visualization (treemap)           | Python, psutil,          |
 |              |                                                | matplotlib, squarify     |
 | **imgsizes** | Image resizing utility                         | Python, ImageMagick      |
+| **imgls**    | Terminal image grid display                    | Bash, Kitty terminal     |
 | **imgtag**   | AI-powered image metadata tagging              | Python, Ollama, exiftool |
 | **git**      | Git configuration                              | Git                      |
 | **emptybye** | Empty directory removal tool                   | Python 3                 |
@@ -99,6 +100,21 @@ memviz --output ~/ram_usage.png --csv ~/ram_usage.csv
 # AI-powered image organization
 imgtag ~/Pictures/001.jpg -w  # Analyze and write metadata
 imgtag ~/Photos/ -f           # Batch process with force overwrite
+```
+
+### imgls
+
+```bash
+# Display images in a 3-column grid (default)
+imgls
+
+# Display images in 4 columns with custom spacing
+imgls 4
+
+# Navigate through paginated image display
+# Press any key to go to next page
+# Press 'q' to quit
+imgls 2  # 2-column display with pagination
 ```
 
 ### emptybye
