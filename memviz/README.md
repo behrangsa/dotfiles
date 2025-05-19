@@ -25,6 +25,7 @@ MemViz creates detailed, interactive visualizations of your system's memory usag
 ```
 
 The script will:
+
 1. Check for required dependencies
 2. Install them if needed (with your permission)
 3. Create a symbolic link to make the command available
@@ -70,26 +71,26 @@ memviz --headless -o server_memory.png --no-display
 
 ## Command Line Options
 
-| Option | Description |
-|--------|-------------|
-| `-o, --output` | Output path for the treemap image |
-| `--csv` | Output path for CSV data export |
-| `--json` | Output path for JSON data export |
-| `--width` | Width of the output image in inches (default: 48) |
-| `--height` | Height of the output image in inches (default: 30) |
-| `--dpi` | DPI of the output image (default: 100) |
-| `--min-memory` | Minimum memory threshold in MB (default: 1.0) |
-| `--colormap` | Colormap for the visualization |
-| `--no-display` | Don't attempt to display the visualization |
-| `--no-csv` | Don't export data to CSV |
-| `--no-json` | Don't export data to JSON |
-| `--group-by` | Group processes by attribute (username, none) |
-| `--color-by-user` | Color rectangles by username |
-| `--exclude-pids` | Comma-separated list of PIDs to exclude |
-| `--exclude-users` | Comma-separated list of usernames to exclude |
-| `--top` | Show only top N processes by memory usage |
-| `--headless` | Force headless mode (no GUI dependencies) |
-| `-v, --verbose` | Enable verbose logging |
+| Option            | Description                                        |
+| ----------------- | -------------------------------------------------- |
+| `-o, --output`    | Output path for the treemap image                  |
+| `--csv`           | Output path for CSV data export                    |
+| `--json`          | Output path for JSON data export                   |
+| `--width`         | Width of the output image in inches (default: 48)  |
+| `--height`        | Height of the output image in inches (default: 30) |
+| `--dpi`           | DPI of the output image (default: 100)             |
+| `--min-memory`    | Minimum memory threshold in MB (default: 1.0)      |
+| `--colormap`      | Colormap for the visualization                     |
+| `--no-display`    | Don't attempt to display the visualization         |
+| `--no-csv`        | Don't export data to CSV                           |
+| `--no-json`       | Don't export data to JSON                          |
+| `--group-by`      | Group processes by attribute (username, none)      |
+| `--color-by-user` | Color rectangles by username                       |
+| `--exclude-pids`  | Comma-separated list of PIDs to exclude            |
+| `--exclude-users` | Comma-separated list of usernames to exclude       |
+| `--top`           | Show only top N processes by memory usage          |
+| `--headless`      | Force headless mode (no GUI dependencies)          |
+| `-v, --verbose`   | Enable verbose logging                             |
 
 ## Examples
 

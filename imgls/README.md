@@ -7,6 +7,7 @@ A terminal utility that displays images in a grid layout with pagination.
 The `imgls` utility displays images in a terminal grid with an adjustable number of columns, automatic pagination, and truncated filenames. It's perfect for quickly browsing image directories in terminal environments that support kitty's image protocol.
 
 Features:
+
 - Grid display with configurable columns
 - Automatic pagination
 - Smart filename truncation
@@ -65,6 +66,7 @@ imgls 2
 ## Technical Details
 
 The script uses:
+
 - Terminal dimensions to calculate optimal image placement
 - Kitty's image protocol for image rendering
 - Unicode ellipsis for filename truncation

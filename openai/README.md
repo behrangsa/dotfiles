@@ -29,6 +29,7 @@ cd ~/dotfiles/openai
 ### Dependencies
 
 The script requires Python 3 and the following Python packages (automatically installed):
+
 - `requests`: For API communication
 - `pygments`: For syntax highlighting
 - `rich`: For table formatting and terminal styling

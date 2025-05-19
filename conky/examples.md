@@ -14,5 +14,3 @@ Here's how you can do it:
 2. Type `:set number` and press `Enter`.
 
 ---
-
-

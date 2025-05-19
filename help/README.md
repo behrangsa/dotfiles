@@ -28,6 +28,7 @@ cd ~/dotfiles/help
 ### Dependencies
 
 The script requires Python 3 and the following Python packages (automatically installed):
+
 - `requests`: For API communication
 
 You'll also need an OpenAI API key. You can configure it using the `bu-openai configure` command if you have the OpenAI module installed, or by setting the `OPENAI_API_KEY` environment variable.

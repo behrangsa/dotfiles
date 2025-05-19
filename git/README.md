@@ -26,15 +26,15 @@ This will create a symbolic link from `~/.gitconfig` to the configuration file i
 
 ### Aliases
 
-| Alias | Command | Description |
-|-------|---------|-------------|
-| `s`, `st` | `status` | Check repository status |
-| `c`, `cm` | `commit` | Create a commit |
-| `co` | `checkout` | Switch branches or restore files |
-| `br` | `branch` | List, create, or delete branches |
-| `lg` | `log --oneline --graph --decorate --all --author-date-order` | View decorated commit history graph |
-| `last` | `log -1 HEAD` | Show the last commit |
-| `unstage` | `reset HEAD --` | Remove files from staging area |
+| Alias     | Command                                                      | Description                         |
+| --------- | ------------------------------------------------------------ | ----------------------------------- |
+| `s`, `st` | `status`                                                     | Check repository status             |
+| `c`, `cm` | `commit`                                                     | Create a commit                     |
+| `co`      | `checkout`                                                   | Switch branches or restore files    |
+| `br`      | `branch`                                                     | List, create, or delete branches    |
+| `lg`      | `log --oneline --graph --decorate --all --author-date-order` | View decorated commit history graph |
+| `last`    | `log -1 HEAD`                                                | Show the last commit                |
+| `unstage` | `reset HEAD --`                                              | Remove files from staging area      |
 
 ### Default Settings
 

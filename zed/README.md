@@ -5,6 +5,7 @@ Configuration and customization for the Zed editor.
 ## Description
 
 The `zed` module provides a curated configuration for the Zed editor, optimizing it for development with:
+
 - Custom font settings (Maple Mono NF)
 - Enhanced UI/UX preferences
 - GitHub Copilot integration
@@ -33,12 +34,14 @@ This will create a symbolic link from `~/.config/zed/settings.json` to this modu
 ## Features
 
 ### Font Configuration
+
 - UI Font: Noto Sans with emoji fallback
 - Buffer Font: Maple Mono NF with ligatures
 - Customizable font sizes and weights
 - Comfortable line height
 
 ### Editor Behavior
+
 - Autosave after ~42 seconds
 - Copy on terminal select
 - Active pane magnification
@@ -47,6 +50,7 @@ This will create a symbolic link from `~/.config/zed/settings.json` to this modu
 - Centered layout with customizable padding
 
 ### GitHub Copilot Integration
+
 - Subtle prediction mode
 - Disabled in sensitive files
 - Configurable proxy settings
@@ -54,12 +58,14 @@ This will create a symbolic link from `~/.config/zed/settings.json` to this modu
 - Claude 3 Sonnet models for chat and editing
 
 ### Language Support
+
 - TypeScript/TSX formatting with Prettier
 - Markdown formatting support
 - LaTeX build configuration
 - Import organization on format
 
 ### Privacy & Performance
+
 - Telemetry disabled
 - Optimized buffer settings
 - Smart tab management
@@ -72,6 +78,7 @@ To modify settings, edit `settings.json` in this directory. The changes will be 
 ## Keybindings
 
 Uses VSCode-like keybindings for familiarity, including:
+
 - Cmd/Ctrl+P for file switching
 - Cmd/Ctrl+Shift+P for command palette
 - Standard editing shortcuts

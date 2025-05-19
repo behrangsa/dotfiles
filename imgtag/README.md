@@ -16,7 +16,7 @@ AI-powered image tagging, metadata enrichment, and smart renaming utility.
 
 - 🖼️ AI-powered image content analysis
 - 📝 Automatic metadata generation and embedding
-- 🏷️ Smart tagging with relevant keywords 
+- 🏷️ Smart tagging with relevant keywords
 - 🔤 Intelligent filename suggestions
 - 📁 Batch processing for entire directories
 - 🔍 Preview suggestions before applying changes
@@ -29,6 +29,7 @@ AI-powered image tagging, metadata enrichment, and smart renaming utility.
 ```
 
 This will:
+
 - Install the script to your `~/.local/bin/` directory
 - Make the command available in your terminal as `imgtag`
 

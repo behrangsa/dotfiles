@@ -4,8 +4,9 @@ A utility to create favicon.ico files from image files using ImageMagick.
 
 ## Description
 
-The `mkfav` utility creates a multi-resolution favicon.ico file from an input image. 
+The `mkfav` utility creates a multi-resolution favicon.ico file from an input image.
 The favicon will contain the following resolutions:
+
 - 16x16
 - 32x32
 - 48x48
