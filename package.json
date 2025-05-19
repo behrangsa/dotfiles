@@ -1,0 +1,29 @@
+{
+  "name": "dotfiles",
+  "version": "1.0.0",
+  "description": "> \"Simplicity is a great virtue but it requires hard work to achieve it.\" > &mdash; Edsger W. Dijkstra",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prepare": "husky"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/behrangsa/dotfiles.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/behrangsa/dotfiles/issues"
+  },
+  "homepage": "https://github.com/behrangsa/dotfiles#readme",
+  "devDependencies": {
+    "husky": "9.1.7",
+    "lint-staged": "16.0.0",
+    "prettier": "3.5.3"
+  },
+  "lint-staged": {
+    "**/*.md": "prettier --write"
+  }
+}
