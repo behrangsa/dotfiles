@@ -1,8 +1,5 @@
 # 🧰 behrangsa's Dotfiles
 
-> "Simplicity is a great virtue but it requires hard work to achieve it."
-> &mdash; Edsger W. Dijkstra
-
 This repository contains configuration files and utilities that form the
 foundation of my Linux development environment.
 
@@ -24,6 +21,7 @@ foundation of my Linux development environment.
 | **conky**    | System monitoring dashboard                    | Conky                    |
 | **thumbgen** | Thumbnail generation utility                   | Python, Pillow           |
 | **zed**      | Zed editor configuration                       | Zed                      |
+| **sqlite**   | SQLite database dump utility                   | Python, pandas           |
 
 ## 🛠️ Installation
 
@@ -145,6 +143,16 @@ bu-thumbgen ~/Pictures/album
 - Configuration files for Zed editor
 - Custom keybindings and themes
 - Optimized for Python, JavaScript, and Markdown editing
+
+### sqlite
+
+```bash
+# Export tables from 'mydatabase.db' to the current directory
+bu-sqlite-dump --db mydatabase.db
+
+# Export tables from 'mydatabase.db' to a directory named 'db_export'
+bu-sqlite-dump --db mydatabase.db --output ./db_export
+```
 
 ## 📄 License
 
