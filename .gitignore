@@ -1,2 +1,8 @@
-__pycache__/
+# node.js
 node_modules/
+
+# python
+__pycache__/
+.mypy_cache/
+.ropeproject/
+.ruff_cache/
