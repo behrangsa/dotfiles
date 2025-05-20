@@ -48,6 +48,7 @@ log = logging.getLogger(__name__)
 
 # --- Core Functions ---
 
+
 def check_imagemagick() -> None:
     """
     Checks if the ImageMagick 'convert' command is available in the PATH.
@@ -98,9 +99,7 @@ def generate_resized_image(
         str(output_path),
     ]
 
-    log.info(
-        f"Generating {size}x{size} version for '{input_path.name}' -> '{output_path.name}'"
-    )
+    log.info(f"Generating {size}x{size} version for '{input_path.name}' -> '{output_path.name}'")
     log.debug(f"Executing command: {' '.join(shlex.quote(str(arg)) for arg in command)}")
 
     try:
@@ -110,7 +109,7 @@ def generate_resized_image(
             check=True,  # Raise CalledProcessError on non-zero exit code
             capture_output=True,  # Capture stdout and stderr
             text=True,  # Decode output as text
-            encoding='utf-8'
+            encoding="utf-8",
         )
         log.debug(f"ImageMagick stdout:\n{process.stdout}")
         if process.stderr:
@@ -123,8 +122,8 @@ def generate_resized_image(
         # This should theoretically be caught by check_imagemagick,
         # but handle defensively.
         log.error(
-             "Error: 'convert' command not found during execution. "
-             "Is ImageMagick installed and in PATH?"
+            "Error: 'convert' command not found during execution. "
+            "Is ImageMagick installed and in PATH?"
         )
         return False
     except subprocess.CalledProcessError as e:
@@ -152,7 +151,7 @@ def generate_resized_image(
                 log.warning(f"Removed potentially incomplete file: {output_path}")
             except OSError as rm_err:
                 log.error(f"Failed to remove incomplete file {output_path}: {rm_err}")
-        raise # Re-raise unexpected errors
+        raise  # Re-raise unexpected errors
 
 
 def process_image_file(image_path: Path) -> int:
@@ -178,8 +177,7 @@ def process_image_file(image_path: Path) -> int:
     # Check if the file extension is a known image type
     if image_path.suffix.lower() not in IMAGE_EXTENSIONS:
         log.warning(
-            f"Skipping file with unrecognized extension "
-            f"'{image_path.suffix}': {image_path.name}"
+            f"Skipping file with unrecognized extension '{image_path.suffix}': {image_path.name}"
         )
         return 0
 
@@ -196,11 +194,11 @@ def process_image_file(image_path: Path) -> int:
 
         # Avoid overwriting the source if its name matches the pattern
         if image_path == output_path:
-             log.warning(
-                 f"Skipping size {size} for {image_path.name} because "
-                 f"output name matches input name."
-             )
-             continue
+            log.warning(
+                f"Skipping size {size} for {image_path.name} because "
+                f"output name matches input name."
+            )
+            continue
 
         try:
             if generate_resized_image(image_path, output_path, size, RESIZE_FILTER):
@@ -211,14 +209,13 @@ def process_image_file(image_path: Path) -> int:
             log.error(f"Failed to process {image_path} for size {size}: {e}")
             # Stop processing this file if critical error occurred
             if isinstance(e, PermissionError):
-                 log.error("Stopping processing due to permission error.")
-                 break # Stop trying other sizes for this file
+                log.error("Stopping processing due to permission error.")
+                break  # Stop trying other sizes for this file
         except Exception as e:
             log.error(f"Unexpected error processing {image_path} for size {size}: {e}")
             # Decide whether to continue with other sizes or stop
             # For now, log and continue with next size.
             pass
-
 
     return success_count
 
@@ -255,7 +252,7 @@ def process_directory(dir_path: Path) -> int:
                     processed_files += 1
                     total_success_count += process_image_file(item_path)
                 else:
-                     log.debug(f"Skipping non-image file: {item_path.name}")
+                    log.debug(f"Skipping non-image file: {item_path.name}")
             elif item_path.is_dir():
                 log.debug(f"Skipping subdirectory: {item_path.name}")
             # Add handling for other file types like symlinks if necessary
@@ -264,15 +261,19 @@ def process_directory(dir_path: Path) -> int:
 
     except PermissionError as e:
         log.error(f"Permission error reading directory {dir_path}: {e}")
-        return total_success_count # Return count so far
+        return total_success_count  # Return count so far
     except Exception as e:
         log.error(f"An unexpected error occurred while iterating directory {dir_path}: {e}")
-        return total_success_count # Return count so far
+        return total_success_count  # Return count so far
 
-    log.info(f"Finished processing directory '{dir_path}'. Processed {processed_files} image files.")
+    log.info(
+        f"Finished processing directory '{dir_path}'. Processed {processed_files} image files."
+    )
     return total_success_count
 
+
 # --- Main Execution ---
+
 
 def main():
     """
@@ -288,7 +289,7 @@ Examples:
 
   # Process all images in a directory
   python %(prog)s /path/to/image_directory/
-"""
+""",
     )
     parser.add_argument(
         "input_path",
@@ -296,9 +297,7 @@ Examples:
         help="Path to the input image file or directory containing images.",
     )
     parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="Enable verbose debug logging."
+        "-v", "--verbose", action="store_true", help="Enable verbose debug logging."
     )
 
     args = parser.parse_args()
@@ -331,7 +330,7 @@ Examples:
         log.info(f"Processing complete. Total variations generated: {total_generated}")
 
     except FileNotFoundError:
-         # Should be caught earlier, but handle defensively
+        # Should be caught earlier, but handle defensively
         log.error(f"Error: Input path not found: {input_path}")
         sys.exit(1)
     except PermissionError as e:
@@ -342,6 +341,6 @@ Examples:
         log.exception(f"An unexpected error occurred: {e}", exc_info=True)
         sys.exit(1)
 
+
 if __name__ == "__main__":
     main()
-

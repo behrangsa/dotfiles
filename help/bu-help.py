@@ -60,7 +60,7 @@ TERMINAL_WIDTH = os.get_terminal_size().columns if sys.stdout.isatty() else 80
 def get_api_key() -> Optional[str]:
     """
     Retrieve the OpenAI API key from environment variables or config file.
-    
+
     Returns:
         str: The API key if found, None otherwise
     """
@@ -68,82 +68,76 @@ def get_api_key() -> Optional[str]:
     api_key = os.environ.get(API_KEY_ENV_VAR)
     if api_key:
         return api_key
-    
+
     # Then check config file
     if CONFIG_FILE.exists():
         try:
-            with open(CONFIG_FILE, 'r') as f:
+            with open(CONFIG_FILE, "r") as f:
                 for line in f:
                     line = line.strip()
-                    if line and not line.startswith('#'):
-                        if API_KEY_ENV_VAR in line and '=' in line:
-                            _, value = line.split('=', 1)
+                    if line and not line.startswith("#"):
+                        if API_KEY_ENV_VAR in line and "=" in line:
+                            _, value = line.split("=", 1)
                             # Remove quotes if present
                             api_key = value.strip('" ')
                             if api_key:
                                 return api_key
         except Exception as e:
             print(f"Error reading config file: {e}", file=sys.stderr)
-    
+
     return None
 
 
-def stream_openai_response(system_prompt: str, user_prompt: str, api_key: str, model: str = DEFAULT_MODEL) -> Iterator[str]:
+def stream_openai_response(
+    system_prompt: str, user_prompt: str, api_key: str, model: str = DEFAULT_MODEL
+) -> Iterator[str]:
     """
     Stream a response from OpenAI's chat completion API.
-    
+
     Args:
         system_prompt: The system message that sets the assistant's behavior
         user_prompt: The user's query
         api_key: OpenAI API key
         model: The model to use for completion
-        
+
     Yields:
         Chunks of the response text as they are received
     """
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
-    
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+
     data = {
         "model": model,
         "messages": [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt}
+            {"role": "user", "content": user_prompt},
         ],
-        "stream": True
+        "stream": True,
     }
-    
+
     try:
-        response = requests.post(
-            API_BASE_URL,
-            headers=headers,
-            json=data,
-            stream=True
-        )
+        response = requests.post(API_BASE_URL, headers=headers, json=data, stream=True)
         response.raise_for_status()
-        
+
         # Process the streaming response
         for line in response.iter_lines():
             if line:
                 # Remove the "data: " prefix
-                line = line.decode('utf-8')
-                if line.startswith('data: '):
+                line = line.decode("utf-8")
+                if line.startswith("data: "):
                     line = line[6:]  # Skip "data: "
-                    
+
                     # Skip the [DONE] message
                     if line == "[DONE]":
                         break
-                        
+
                     try:
                         # Parse the JSON response
                         json_response = json.loads(line)
-                        
+
                         # Extract the content delta if it exists
                         delta = json_response.get("choices", [{}])[0].get("delta", {})
                         content = delta.get("content", "")
-                        
+
                         if content:
                             yield content
                     except json.JSONDecodeError:
@@ -151,23 +145,23 @@ def stream_openai_response(system_prompt: str, user_prompt: str, api_key: str, m
                         continue
     except requests.RequestException as e:
         error_msg = f"Error communicating with OpenAI API: {e}\n"
-        
+
         # Try to extract more detailed error information
-        if hasattr(e, 'response') and e.response is not None:
+        if hasattr(e, "response") and e.response is not None:
             try:
                 error_data = e.response.json()
-                if 'error' in error_data and 'message' in error_data['error']:
+                if "error" in error_data and "message" in error_data["error"]:
                     error_msg += f"API Error: {error_data['error']['message']}"
             except (ValueError, KeyError):
                 pass
-        
+
         yield f"{COLORS['red']}{error_msg}{COLORS['reset']}"
 
 
 def print_header(subject: str, prompt: str) -> None:
     """
     Print a formatted header with the subject and prompt.
-    
+
     Args:
         subject: The subject being queried
         prompt: The user's prompt
@@ -179,17 +173,17 @@ def print_header(subject: str, prompt: str) -> None:
 def get_subject_prompt(subject: str) -> str:
     """
     Get the system prompt for a given subject.
-    
+
     Args:
         subject: The subject name
-        
+
     Returns:
         The system prompt for the subject, or a generic prompt if not found
     """
     # Check if we have a pre-defined prompt for this subject
     if subject.lower() in SYSTEM_PROMPTS:
         return SYSTEM_PROMPTS[subject.lower()]
-    
+
     # Otherwise, create a generic prompt
     return f"You are a {subject} expert and tutor"
 
@@ -197,54 +191,46 @@ def get_subject_prompt(subject: str) -> str:
 def main() -> int:
     """
     Main program entry point.
-    
+
     Returns:
         Exit code (0 for success, non-zero for error)
     """
     # Parse command-line arguments
-    parser = argparse.ArgumentParser(
-        description="Get help on various subjects using OpenAI"
-    )
-    
+    parser = argparse.ArgumentParser(description="Get help on various subjects using OpenAI")
+
     parser.add_argument(
-        "--subject", "-s",
-        required=True,
-        help="The subject to get help on (e.g., vim, bash, git)"
+        "--subject", "-s", required=True, help="The subject to get help on (e.g., vim, bash, git)"
     )
-    
+
+    parser.add_argument("--prompt", "-p", required=True, help="The help query or prompt")
+
     parser.add_argument(
-        "--prompt", "-p",
-        required=True,
-        help="The help query or prompt"
-    )
-    
-    parser.add_argument(
-        "--model", "-m",
+        "--model",
+        "-m",
         default=DEFAULT_MODEL,
-        help=f"The OpenAI model to use (default: {DEFAULT_MODEL})"
+        help=f"The OpenAI model to use (default: {DEFAULT_MODEL})",
     )
-    
-    parser.add_argument(
-        "--key", "-k",
-        help="OpenAI API key (overrides env var and config file)"
-    )
-    
+
+    parser.add_argument("--key", "-k", help="OpenAI API key (overrides env var and config file)")
+
     args = parser.parse_args()
-    
+
     # Get the API key
     api_key = args.key or get_api_key()
     if not api_key:
-        print(f"{COLORS['red']}Error: OpenAI API key not found. Please set the {API_KEY_ENV_VAR} environment variable, "  
-              f"provide it with --key, or configure it with 'bu-openai configure'.{COLORS['reset']}", 
-              file=sys.stderr)
+        print(
+            f"{COLORS['red']}Error: OpenAI API key not found. Please set the {API_KEY_ENV_VAR} environment variable, "
+            f"provide it with --key, or configure it with 'bu-openai configure'.{COLORS['reset']}",
+            file=sys.stderr,
+        )
         return 1
-    
+
     # Get the system prompt for the subject
     system_prompt = get_subject_prompt(args.subject)
-    
+
     # Print the header
     print_header(args.subject, args.prompt)
-    
+
     # Stream the response
     try:
         full_response = ""
@@ -255,7 +241,7 @@ def main() -> int:
     except KeyboardInterrupt:
         print(f"\n{COLORS['yellow']}Response streaming interrupted by user.{COLORS['reset']}")
         return 130  # Standard exit code for SIGINT
-    
+
     return 0
 
 

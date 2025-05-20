@@ -26,8 +26,7 @@ import numpy as np
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger("memviz")
 
@@ -35,7 +34,14 @@ logger = logging.getLogger("memviz")
 class ProcessMemoryInfo:
     """Represents memory information for a single process."""
 
-    def __init__(self, pid: int, name: str, memory_mb: float, username: str = "", cmdline: Optional[List[str]] = None):
+    def __init__(
+        self,
+        pid: int,
+        name: str,
+        memory_mb: float,
+        username: str = "",
+        cmdline: Optional[List[str]] = None,
+    ):
         """
         Initialize process memory information.
 
@@ -54,7 +60,7 @@ class ProcessMemoryInfo:
 
         # Create a display name by combining process name and first argument if available
         self.display_name = self.name
-        if len(self.cmdline) > 1 and not self.name.startswith('/'):
+        if len(self.cmdline) > 1 and not self.name.startswith("/"):
             arg = os.path.basename(self.cmdline[1]) if self.cmdline[1] else ""
             if arg and len(arg) < 20:
                 self.display_name = f"{self.name} ({arg})"
@@ -70,14 +76,14 @@ class ProcessMemoryInfo:
             "memory_mb": round(self.memory_mb, 2),
             "username": self.username,
             "cmdline": self.cmdline,
-            "display_name": self.display_name
+            "display_name": self.display_name,
         }
 
 
 def collect_process_memory_info(
     min_memory_mb: float = 1.0,
     exclude_pids: Optional[Set[int]] = None,
-    exclude_users: Optional[Set[str]] = None
+    exclude_users: Optional[Set[str]] = None,
 ) -> List[ProcessMemoryInfo]:
     """
     Collect memory usage information for all running processes.
@@ -95,26 +101,28 @@ def collect_process_memory_info(
     exclude_users = exclude_users or set()
 
     try:
-        for proc in psutil.process_iter(['pid', 'name', 'memory_info', 'username', 'cmdline']):  # pyright: ignore[reportPossiblyUnboundVariable]
+        for proc in psutil.process_iter(["pid", "name", "memory_info", "username", "cmdline"]):  # pyright: ignore[reportPossiblyUnboundVariable]
             try:
                 process_info = proc.info
-                pid = process_info['pid']
-                username = process_info.get('username', '')
+                pid = process_info["pid"]
+                username = process_info.get("username", "")
 
                 # Apply filters
                 if pid in exclude_pids or (username and username in exclude_users):
                     continue
 
-                mem_usage_mb = process_info['memory_info'].rss / (1024 * 1024)
+                mem_usage_mb = process_info["memory_info"].rss / (1024 * 1024)
 
                 if mem_usage_mb >= min_memory_mb:
-                    processes.append(ProcessMemoryInfo(
-                        pid=pid,
-                        name=process_info['name'],
-                        memory_mb=mem_usage_mb,
-                        username=username,
-                        cmdline=process_info.get('cmdline', [])
-                    ))
+                    processes.append(
+                        ProcessMemoryInfo(
+                            pid=pid,
+                            name=process_info["name"],
+                            memory_mb=mem_usage_mb,
+                            username=username,
+                            cmdline=process_info.get("cmdline", []),
+                        )
+                    )
             except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess) as e:
                 logger.debug(f"Skipping process: {e}")
     except Exception as e:
@@ -136,21 +144,22 @@ def get_system_memory_info() -> Dict[str, Any]:
         mem = psutil.virtual_memory()  # pyright: ignore[reportPossiblyUnboundVariable]
         swap = psutil.swap_memory()  # pyright: ignore[reportPossiblyUnboundVariable]
         return {
-            'total_gb': mem.total / (1024**3),
-            'used_gb': mem.used / (1024**3),
-            'available_gb': mem.available / (1024**3),
-            'percent': mem.percent,
-            'swap_total_gb': swap.total / (1024**3),
-            'swap_used_gb': swap.used / (1024**3),
-            'swap_percent': swap.percent
+            "total_gb": mem.total / (1024**3),
+            "used_gb": mem.used / (1024**3),
+            "available_gb": mem.available / (1024**3),
+            "percent": mem.percent,
+            "swap_total_gb": swap.total / (1024**3),
+            "swap_used_gb": swap.used / (1024**3),
+            "swap_percent": swap.percent,
         }
     except Exception as e:
         logger.error(f"Error getting system memory information: {e}")
         raise
 
 
-def group_processes_by_attribute(processes: List[ProcessMemoryInfo],
-                                attribute: Optional[str] = None) -> List[ProcessMemoryInfo]:
+def group_processes_by_attribute(
+    processes: List[ProcessMemoryInfo], attribute: Optional[str] = None
+) -> List[ProcessMemoryInfo]:
     """
     Group processes by a specified attribute.
 
@@ -161,7 +170,7 @@ def group_processes_by_attribute(processes: List[ProcessMemoryInfo],
     Returns:
         List of grouped ProcessMemoryInfo objects
     """
-    if not attribute or attribute not in ('username',):
+    if not attribute or attribute not in ("username",):
         return processes
 
     # Type alias for group keys
@@ -175,20 +184,20 @@ def group_processes_by_attribute(processes: List[ProcessMemoryInfo],
 
         if key not in grouped_data:
             grouped_data[key] = {
-                'name': f"{key} (group)",
-                'memory_mb': 0.0,
-                'username': key if attribute == 'username' else "",
-                'processes': []
+                "name": f"{key} (group)",
+                "memory_mb": 0.0,
+                "username": key if attribute == "username" else "",
+                "processes": [],
             }
 
-        grouped_data[key]['memory_mb'] += proc.memory_mb
-        grouped_data[key]['processes'].append(proc)
+        grouped_data[key]["memory_mb"] += proc.memory_mb
+        grouped_data[key]["processes"].append(proc)
 
     # Convert grouped data back to ProcessMemoryInfo objects
     grouped_processes = []
 
     for key, data in grouped_data.items():
-        process_list = cast(List[ProcessMemoryInfo], data['processes'])
+        process_list = cast(List[ProcessMemoryInfo], data["processes"])
         # Choose a representative PID from the group
         if process_list:
             # Use the PID with highest memory usage
@@ -196,12 +205,14 @@ def group_processes_by_attribute(processes: List[ProcessMemoryInfo],
         else:
             pid = 0
 
-        grouped_processes.append(ProcessMemoryInfo(
-            pid=pid,
-            name=data['name'],
-            memory_mb=data['memory_mb'],
-            username=key if attribute == 'username' else ""
-        ))
+        grouped_processes.append(
+            ProcessMemoryInfo(
+                pid=pid,
+                name=data["name"],
+                memory_mb=data["memory_mb"],
+                username=key if attribute == "username" else "",
+            )
+        )
 
     # Sort by memory usage (descending)
     return sorted(grouped_processes, key=lambda p: p.memory_mb, reverse=True)
@@ -220,15 +231,21 @@ def get_truncated_text(text: str, max_length: int = 30) -> str:
     """
     if len(text) <= max_length:
         return text
-    return text[:max_length-3] + '...'
+    return text[: max_length - 3] + "..."
 
 
 def _create_empty_figure() -> Tuple["Figure", Any]:
     """Create an empty figure when no processes are available to visualize."""
     fig, ax = plt.subplots(figsize=(8, 6))  # pyright: ignore[reportPossiblyUnboundVariable]
-    ax.text(0.5, 0.5, "No processes found meeting the minimum memory threshold",
-            ha='center', va='center', fontsize=14)
-    ax.axis('off')
+    ax.text(
+        0.5,
+        0.5,
+        "No processes found meeting the minimum memory threshold",
+        ha="center",
+        va="center",
+        fontsize=14,
+    )
+    ax.axis("off")
     return fig, ax
 
 
@@ -236,7 +253,7 @@ def _get_colormap(cmap_name: str):
     """Get colormap using the appropriate matplotlib API."""
     try:
         # Use the newer recommended API (for Matplotlib 3.7+)
-        if hasattr(plt, 'colormaps'):  # pyright: ignore[reportPossiblyUnboundVariable]
+        if hasattr(plt, "colormaps"):  # pyright: ignore[reportPossiblyUnboundVariable]
             cmap = plt.colormaps[cmap_name]  # pyright: ignore[reportPossiblyUnboundVariable]
         # Fallback for older Matplotlib versions
         else:
@@ -264,51 +281,50 @@ def _get_colors_by_memory(processes: List[ProcessMemoryInfo], cmap):
     return colors, norm
 
 
-def _add_details_to_rectangle(ax, rect, process: ProcessMemoryInfo, i: int, min_area_for_details: int):
+def _add_details_to_rectangle(
+    ax, rect, process: ProcessMemoryInfo, i: int, min_area_for_details: int
+):
     """Add detailed info to large enough rectangles."""
-    width = getattr(rect, 'get_width', lambda: 0)()
-    height = getattr(rect, 'get_height', lambda: 0)()
+    width = getattr(rect, "get_width", lambda: 0)()
+    height = getattr(rect, "get_height", lambda: 0)()
     area = width * height
 
     if area <= min_area_for_details:
         return
 
-    rx, ry = getattr(rect, 'get_xy', lambda: (0, 0))()
-    
+    rx, ry = getattr(rect, "get_xy", lambda: (0, 0))()
+
     # Add details with better formatting
-    details = [
-        f"{process.memory_mb:.1f} MB",
-        f"PID: {process.pid}"
-    ]
+    details = [f"{process.memory_mb:.1f} MB", f"PID: {process.pid}"]
 
     if process.username:
         details.append(f"User: {process.username}")
 
     # Calculate text position and add with shadow for better readability
-    text_y_positions = [ry + height/2 + (j - len(details)/2) * 12 for j in range(len(details))]
+    text_y_positions = [ry + height / 2 + (j - len(details) / 2) * 12 for j in range(len(details))]
 
     for j, (text, y_pos) in enumerate(zip(details, text_y_positions)):
         # Shadow text for better readability
         ax.text(
-            rx + width/2 + 1,
+            rx + width / 2 + 1,
             y_pos + 1,
             text,
-            ha='center',
-            va='center',
+            ha="center",
+            va="center",
             fontsize=7,
-            color='black',
-            alpha=0.7
+            color="black",
+            alpha=0.7,
         )
 
         ax.text(
-            rx + width/2,
+            rx + width / 2,
             y_pos,
             text,
-            ha='center',
-            va='center',
+            ha="center",
+            va="center",
             fontsize=7,
-            color='white',
-            fontweight='bold'
+            color="white",
+            fontweight="bold",
         )
 
 
@@ -322,7 +338,7 @@ def _create_title(ax, processes: List[ProcessMemoryInfo], system_memory: Dict[st
         f"Swap: {system_memory['swap_total_gb']:.1f} GB total, "
         f"{system_memory['swap_used_gb']:.1f} GB used ({system_memory['swap_percent']}%)",
         fontsize=18,
-        fontweight='bold'
+        fontweight="bold",
     )
 
 
@@ -333,21 +349,15 @@ def _add_user_legend(ax, username_to_idx: Dict[str, int], cmap, norm):
         color = cmap(norm(idx))
         handles.append(Rectangle((0, 0), 1, 1, color=color, label=username or "unknown"))
 
-    ax.legend(
-        handles=handles,
-        title="Users",
-        loc='lower right',
-        fontsize=10,
-        title_fontsize=12
-    )
+    ax.legend(handles=handles, title="Users", loc="lower right", fontsize=10, title_fontsize=12)
 
 
 def _add_memory_colorbar(fig, ax, cmap, norm):
     """Add a colorbar for memory-based visualization."""
     sm = ScalarMappable(cmap=cmap, norm=norm)  # pyright: ignore[reportPossiblyUnboundVariable]
     sm.set_array(np.array([]))  # Explicit array for type checking
-    cbar = fig.colorbar(sm, ax=ax, orientation='vertical', shrink=0.6, pad=0.02)
-    cbar.set_label('Memory Usage (MB)', fontsize=14)
+    cbar = fig.colorbar(sm, ax=ax, orientation="vertical", shrink=0.6, pad=0.02)
+    cbar.set_label("Memory Usage (MB)", fontsize=14)
     cbar.ax.tick_params(labelsize=12)
 
 
@@ -356,10 +366,10 @@ def create_treemap(
     system_memory: Dict[str, Any],
     figsize: Tuple[int, int] = (48, 30),
     min_area_for_details: int = 5000,
-    cmap_name: str = 'viridis',
+    cmap_name: str = "viridis",
     dpi: int = 100,
     show_user_colors: bool = False,
-    top_processes: Optional[int] = None
+    top_processes: Optional[int] = None,
 ) -> "Figure":  # Use string literal for forward reference
     """
     Create a treemap visualization of process memory usage.
@@ -397,7 +407,7 @@ def create_treemap(
 
     # Get colormap
     cmap = _get_colormap(cmap_name)
-    
+
     # Determine colors based on strategy
     username_to_idx = {}
     if show_user_colors:
@@ -413,7 +423,7 @@ def create_treemap(
             alpha=0.8,
             color=colors,
             ax=ax,
-            text_kwargs={'fontsize': 8, 'wrap': True, 'color': 'white'}
+            text_kwargs={"fontsize": 8, "wrap": True, "color": "white"},
         )
     except Exception as e:
         logger.error(f"Error creating treemap: {e}")
@@ -426,7 +436,7 @@ def create_treemap(
             _add_details_to_rectangle(ax, rect, processes[i], i, min_area_for_details)
 
     # Configure axes
-    ax.axis('off')
+    ax.axis("off")
 
     # Add title with more detailed information
     _create_title(ax, processes, system_memory)
@@ -484,7 +494,7 @@ def export_to_csv(processes: List[ProcessMemoryInfo], output_path: str) -> str:
         if output_dir and not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             f.write("Process,PID,Memory (MB),Username\n")
             for p in processes:
                 f.write(f"{p.name},{p.pid},{p.memory_mb:.2f},{p.username}\n")
@@ -496,7 +506,9 @@ def export_to_csv(processes: List[ProcessMemoryInfo], output_path: str) -> str:
         raise
 
 
-def export_to_json(processes: List[ProcessMemoryInfo], system_memory: Dict[str, Any], output_path: str) -> str:
+def export_to_json(
+    processes: List[ProcessMemoryInfo], system_memory: Dict[str, Any], output_path: str
+) -> str:
     """
     Export process memory and system information to JSON file.
 
@@ -518,10 +530,10 @@ def export_to_json(processes: List[ProcessMemoryInfo], system_memory: Dict[str, 
         data = {
             "system": system_memory,
             "processes": [p.to_dict() for p in processes],
-            "timestamp": import_time_module().strftime("%Y-%m-%d %H:%M:%S")
+            "timestamp": import_time_module().strftime("%Y-%m-%d %H:%M:%S"),
         }
 
-        with open(output_path, 'w') as f:
+        with open(output_path, "w") as f:
             json.dump(data, f, indent=2)
 
         logger.info(f"Data exported to JSON: {output_path}")
@@ -534,6 +546,7 @@ def export_to_json(processes: List[ProcessMemoryInfo], system_memory: Dict[str, 
 def import_time_module():
     """Import time module dynamically to avoid issues in restricted environments."""
     import time
+
     return time
 
 
@@ -549,127 +562,106 @@ def parse_args() -> argparse.Namespace:
     )
 
     parser.add_argument(
-        "-o", "--output",
+        "-o",
+        "--output",
         default=os.path.expanduser("~/ram_usage_treemap.png"),
-        help="Output path for the treemap image (default: ~/ram_usage_treemap.png)"
+        help="Output path for the treemap image (default: ~/ram_usage_treemap.png)",
     )
 
     parser.add_argument(
         "--csv",
         default=os.path.expanduser("~/ram_usage_data.csv"),
-        help="Output path for CSV data export (default: ~/ram_usage_data.csv)"
+        help="Output path for CSV data export (default: ~/ram_usage_data.csv)",
     )
 
     parser.add_argument(
         "--json",
         default=os.path.expanduser("~/ram_usage_data.json"),
-        help="Output path for JSON data export (default: ~/ram_usage_data.json)"
+        help="Output path for JSON data export (default: ~/ram_usage_data.json)",
     )
 
     parser.add_argument(
-        "--width",
-        type=int,
-        default=48,
-        help="Width of the output image in inches (default: 48)"
+        "--width", type=int, default=48, help="Width of the output image in inches (default: 48)"
     )
 
     parser.add_argument(
-        "--height",
-        type=int,
-        default=30,
-        help="Height of the output image in inches (default: 30)"
+        "--height", type=int, default=30, help="Height of the output image in inches (default: 30)"
     )
 
     parser.add_argument(
-        "--dpi",
-        type=int,
-        default=100,
-        help="DPI of the output image (default: 100)"
+        "--dpi", type=int, default=100, help="DPI of the output image (default: 100)"
     )
 
     parser.add_argument(
         "--min-memory",
         type=float,
         default=1.0,
-        help="Minimum memory threshold in MB (default: 1.0)"
+        help="Minimum memory threshold in MB (default: 1.0)",
     )
 
     parser.add_argument(
         "--colormap",
         default="viridis",
-        choices=["viridis", "plasma", "inferno", "magma", "cividis", "cool", "hot", "tab10", "tab20", "Set1", "Set2"],
-        help="Colormap for the visualization (default: viridis)"
+        choices=[
+            "viridis",
+            "plasma",
+            "inferno",
+            "magma",
+            "cividis",
+            "cool",
+            "hot",
+            "tab10",
+            "tab20",
+            "Set1",
+            "Set2",
+        ],
+        help="Colormap for the visualization (default: viridis)",
     )
 
     parser.add_argument(
         "--no-display",
         action="store_true",
-        help="Don't attempt to display the visualization (just save to file)"
+        help="Don't attempt to display the visualization (just save to file)",
     )
 
-    parser.add_argument(
-        "--no-csv",
-        action="store_true",
-        help="Don't export data to CSV"
-    )
+    parser.add_argument("--no-csv", action="store_true", help="Don't export data to CSV")
 
-    parser.add_argument(
-        "--no-json",
-        action="store_true",
-        help="Don't export data to JSON"
-    )
+    parser.add_argument("--no-json", action="store_true", help="Don't export data to JSON")
 
     parser.add_argument(
         "--group-by",
         choices=["username", "none"],
         default="none",
-        help="Group processes by attribute (default: none)"
+        help="Group processes by attribute (default: none)",
     )
 
     parser.add_argument(
         "--color-by-user",
         action="store_true",
-        help="Color rectangles by username instead of memory usage"
+        help="Color rectangles by username instead of memory usage",
     )
 
     parser.add_argument(
-        "--exclude-pids",
-        type=str,
-        default="",
-        help="Comma-separated list of PIDs to exclude"
+        "--exclude-pids", type=str, default="", help="Comma-separated list of PIDs to exclude"
     )
 
     parser.add_argument(
-        "--exclude-users",
-        type=str,
-        default="",
-        help="Comma-separated list of usernames to exclude"
+        "--exclude-users", type=str, default="", help="Comma-separated list of usernames to exclude"
     )
 
     parser.add_argument(
-        "--top",
-        type=int,
-        default=None,
-        help="Show only top N processes by memory usage"
+        "--top", type=int, default=None, help="Show only top N processes by memory usage"
     )
 
     parser.add_argument(
         "--headless",
         action="store_true",
-        help="Force headless mode (use Agg backend, no GUI dependencies)"
+        help="Force headless mode (use Agg backend, no GUI dependencies)",
     )
 
-    parser.add_argument(
-        "-v", "--verbose",
-        action="store_true",
-        help="Enable verbose logging"
-    )
+    parser.add_argument("-v", "--verbose", action="store_true", help="Enable verbose logging")
 
-    parser.add_argument(
-        "--version",
-        action="store_true",
-        help="Show version information and exit"
-    )
+    parser.add_argument("--version", action="store_true", help="Show version information and exit")
 
     return parser.parse_args()
 
@@ -683,8 +675,8 @@ def handle_cli_args() -> Tuple[argparse.Namespace, Set[int], Set[str]]:
     """
     # Handle version display before any other operations
     if "--version" in sys.argv:
-            print("memviz v1.2.0")
-            sys.exit(0)
+        print("memviz v1.2.0")
+        sys.exit(0)
 
     # Check for headless mode before importing matplotlib
     if "--headless" in sys.argv or os.environ.get("DISPLAY") is None:
@@ -718,9 +710,9 @@ def handle_cli_args() -> Tuple[argparse.Namespace, Set[int], Set[str]]:
     return args, exclude_pids, exclude_users
 
 
-def process_data(args: argparse.Namespace,
-                exclude_pids: Set[int],
-                exclude_users: Set[str]) -> Tuple[List[ProcessMemoryInfo], Dict[str, Any]]:
+def process_data(
+    args: argparse.Namespace, exclude_pids: Set[int], exclude_users: Set[str]
+) -> Tuple[List[ProcessMemoryInfo], Dict[str, Any]]:
     """
     Collect and process system data.
 
@@ -735,9 +727,7 @@ def process_data(args: argparse.Namespace,
     # Collect process information
     logger.info(f"Collecting process memory information (min threshold: {args.min_memory} MB)")
     processes = collect_process_memory_info(
-        min_memory_mb=args.min_memory,
-        exclude_pids=exclude_pids,
-        exclude_users=exclude_users
+        min_memory_mb=args.min_memory, exclude_pids=exclude_pids, exclude_users=exclude_users
     )
     logger.info(f"Found {len(processes)} processes using at least {args.min_memory} MB of memory")
 
@@ -753,9 +743,9 @@ def process_data(args: argparse.Namespace,
     return processes, system_memory
 
 
-def generate_outputs(args: argparse.Namespace,
-                    processes: List[ProcessMemoryInfo],
-                    system_memory: Dict[str, Any]) -> int:
+def generate_outputs(
+    args: argparse.Namespace, processes: List[ProcessMemoryInfo], system_memory: Dict[str, Any]
+) -> int:
     """
     Generate and save visualization and data outputs.
 
@@ -776,7 +766,7 @@ def generate_outputs(args: argparse.Namespace,
         cmap_name=args.colormap,
         dpi=args.dpi,
         show_user_colors=args.color_by_user,
-        top_processes=args.top
+        top_processes=args.top,
     )
 
     # Save visualization

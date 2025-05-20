@@ -12,14 +12,14 @@ import os
 import sys
 import argparse
 import logging
-import logging.handlers # For SysLogHandler
+import logging.handlers  # For SysLogHandler
 
 # --- PyGObject Namespace Versioning ---
 # Attempt to require GnomeDesktop version.
 # The PyGIWarning typically suggests '4.0' for modern GNOME systems (GTK4 based).
 # If this fails, the script cannot proceed.
 try:
-    gi.require_version('GnomeDesktop', '4.0')
+    gi.require_version("GnomeDesktop", "4.0")
 except ValueError as e:
     # This error message is critical for troubleshooting if dependencies are missing.
     sys.stderr.write(f"CRITICAL ERROR: Failed to require GnomeDesktop version: {e}\n")
@@ -29,48 +29,45 @@ except ValueError as e:
         "For Debian/Ubuntu, this might be 'libgnome-desktop-4-dev' (which provides the library) "
         "and 'gir1.2-gnomedesktop-4.0' (for introspection).\n"
     )
-    sys.exit(1) # Exit immediately if core dependency isn't met.
+    sys.exit(1)  # Exit immediately if core dependency isn't met.
 
 from gi.repository import Gio, GnomeDesktop, GLib
 
 # --- Script Configuration ---
 SCRIPT_BASENAME = os.path.basename(__file__)
-LOGGER_NAME = "gnome_thumbnail_generator" # Logger name
-LOG_LEVEL = logging.INFO # Default log level (INFO, DEBUG, WARNING, ERROR)
+LOGGER_NAME = "gnome_thumbnail_generator"  # Logger name
+LOG_LEVEL = logging.INFO  # Default log level (INFO, DEBUG, WARNING, ERROR)
 
 # For production incron usage, set USE_SYSLOG to True.
 # This will send log messages to the system logger.
 # Ensure the user running the incron job has permissions to write to /dev/log.
-USE_SYSLOG = False # CHANGE TO True FOR PRODUCTION INCRON JOBS
+USE_SYSLOG = False  # CHANGE TO True FOR PRODUCTION INCRON JOBS
 
 # Define which thumbnail sizes to attempt to generate.
 # GnomeDesktop.ThumbnailSize.LARGE is typically 256x256.
 # GnomeDesktop.ThumbnailSize.NORMAL is typically 128x128.
-THUMBNAIL_SIZES_TO_GENERATE = [
-    GnomeDesktop.ThumbnailSize.NORMAL,
-    GnomeDesktop.ThumbnailSize.LARGE
-]
+THUMBNAIL_SIZES_TO_GENERATE = [GnomeDesktop.ThumbnailSize.NORMAL, GnomeDesktop.ThumbnailSize.LARGE]
 
 # --- Logger Setup ---
 logger = logging.getLogger(LOGGER_NAME)
 logger.setLevel(LOG_LEVEL)
 # Prevent log duplication if an incron daemon already captures stdout/stderr
-logger.propagate = False 
+logger.propagate = False
 
 # Remove existing handlers to prevent duplication if script is re-run in same process (unlikely for incron)
 for handler in logger.handlers[:]:
     logger.removeHandler(handler)
 
-if USE_SYSLOG and not '--force-console-log' in sys.argv: # Check for override later
+if USE_SYSLOG and not "--force-console-log" in sys.argv:  # Check for override later
     # SysLogHandler for Linux. Address might be '/var/run/syslog' on some systems.
-    syslog_handler = logging.handlers.SysLogHandler(address='/dev/log')
+    syslog_handler = logging.handlers.SysLogHandler(address="/dev/log")
     # Example syslog format: gnome_thumbnail_generator: INFO Message content
-    syslog_formatter = logging.Formatter(f'{SCRIPT_BASENAME}: %(levelname)s %(message)s')
+    syslog_formatter = logging.Formatter(f"{SCRIPT_BASENAME}: %(levelname)s %(message)s")
     syslog_handler.setFormatter(syslog_formatter)
     logger.addHandler(syslog_handler)
 else:
-    console_handler = logging.StreamHandler(sys.stdout) # Use sys.stdout or sys.stderr
-    console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+    console_handler = logging.StreamHandler(sys.stdout)  # Use sys.stdout or sys.stderr
+    console_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
     console_handler.setFormatter(console_formatter)
     logger.addHandler(console_handler)
 
@@ -112,30 +109,38 @@ def create_thumbnail_for_size(filepath, thumbnail_size_enum):
         file_mtime = int(os.path.getmtime(filepath))
 
         file_info = gfile.query_info(
-            Gio.FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE, # Standard way to get MIME type
+            Gio.FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,  # Standard way to get MIME type
             Gio.FileQueryInfoFlags.NONE,
-            None # Cancellable
+            None,  # Cancellable
         )
         mimetype = file_info.get_content_type()
 
         if not mimetype:
-            logger.warning(f"Could not determine MIME type for '{uri_for_logging}'. Skipping {size_name} thumbnail.")
-            return True # Not an error of this script, but a file characteristic.
+            logger.warning(
+                f"Could not determine MIME type for '{uri_for_logging}'. Skipping {size_name} thumbnail."
+            )
+            return True  # Not an error of this script, but a file characteristic.
 
-        logger.debug(f"File '{uri_for_logging}': MIME '{mimetype}', mtime {file_mtime}, TargetSize {size_name}.")
+        logger.debug(
+            f"File '{uri_for_logging}': MIME '{mimetype}', mtime {file_mtime}, TargetSize {size_name}."
+        )
 
         factory = GnomeDesktop.ThumbnailFactory.new(thumbnail_size_enum)
 
         # Check if thumbnailing is possible and if a thumbnail is needed (e.g., not already fresh).
         # can_thumbnail considers if a valid thumbnailer is registered and if a current thumbnail exists.
         if factory.can_thumbnail(gfile, mimetype, file_mtime):
-            logger.info(f"Attempting to generate {size_name} thumbnail for '{uri_for_logging}' (MIME: {mimetype}).")
-            
+            logger.info(
+                f"Attempting to generate {size_name} thumbnail for '{uri_for_logging}' (MIME: {mimetype})."
+            )
+
             # This is a blocking call.
             thumbnail_path = factory.generate_thumbnail(gfile, mimetype)
 
             if thumbnail_path:
-                logger.info(f"Successfully generated {size_name} thumbnail for '{uri_for_logging}' at '{thumbnail_path}'.")
+                logger.info(
+                    f"Successfully generated {size_name} thumbnail for '{uri_for_logging}' at '{thumbnail_path}'."
+                )
                 return True
             else:
                 # This indicates a failure within the thumbnailer for this specific file/mimetype,
@@ -144,12 +149,14 @@ def create_thumbnail_for_size(filepath, thumbnail_size_enum):
                     f"Thumbnail generation FAILED for '{uri_for_logging}' (MIME: {mimetype}, Size: {size_name}) "
                     "by the factory, despite can_thumbnail returning true. The specific thumbnailer might have failed."
                 )
-                return False # Explicit failure
+                return False  # Explicit failure
         else:
             # If can_thumbnail is false, check if it's because a fresh one already exists.
-            existing_thumb_path = factory.lookup(gfile, file_mtime) # mtime helps check freshness
+            existing_thumb_path = factory.lookup(gfile, file_mtime)  # mtime helps check freshness
             if existing_thumb_path:
-                logger.debug(f"Fresh {size_name} thumbnail already exists for '{uri_for_logging}' at '{existing_thumb_path}'. No action needed.")
+                logger.debug(
+                    f"Fresh {size_name} thumbnail already exists for '{uri_for_logging}' at '{existing_thumb_path}'. No action needed."
+                )
                 return True
             else:
                 logger.info(
@@ -157,11 +164,13 @@ def create_thumbnail_for_size(filepath, thumbnail_size_enum):
                     f"(MIME: {mimetype}). No suitable thumbnailer registered, file type unsupported by "
                     "GNOME's current thumbnailers, or it's a type that isn't typically thumbnailed."
                 )
-                return True # Not an error of this script, but a system/config state.
+                return True  # Not an error of this script, but a system/config state.
 
     except GLib.Error as e:
         # GLib.Error can be raised for various GIO issues (e.g., file access problems not caught by initial checks).
-        logger.error(f"GLib/Gio error while processing '{filepath}' for {size_name} thumbnail: {e.message} (code: {e.code})")
+        logger.error(
+            f"GLib/Gio error while processing '{filepath}' for {size_name} thumbnail: {e.message} (code: {e.code})"
+        )
         return False
     except FileNotFoundError:
         # This should ideally be caught by the initial checks in main(),
@@ -170,43 +179,42 @@ def create_thumbnail_for_size(filepath, thumbnail_size_enum):
         return False
     except Exception as e:
         # Catch any other unexpected exceptions.
-        logger.exception(f"An unexpected error occurred creating {size_name} thumbnail for '{filepath}': {e}")
+        logger.exception(
+            f"An unexpected error occurred creating {size_name} thumbnail for '{filepath}': {e}"
+        )
         return False
 
 
 def main():
     parser = argparse.ArgumentParser(
         description="Generates thumbnails for a given file using GNOME Desktop services. "
-                    "Suitable for use with incron or similar file monitoring tools.",
-        epilog=f"Example: {SCRIPT_BASENAME} /path/to/your/file.jpg"
+        "Suitable for use with incron or similar file monitoring tools.",
+        epilog=f"Example: {SCRIPT_BASENAME} /path/to/your/file.jpg",
     )
     parser.add_argument(
-        "filepath",
-        type=str,
-        help="The path to the file for which to generate thumbnails."
+        "filepath", type=str, help="The path to the file for which to generate thumbnails."
     )
     parser.add_argument(
         "--force-console-log",
         action="store_true",
-        help="Force logging to console, overriding USE_SYSLOG in the script (for debugging)."
+        help="Force logging to console, overriding USE_SYSLOG in the script (for debugging).",
     )
     args = parser.parse_args()
 
     # Handle --force-console-log if USE_SYSLOG was initially True
     if args.force_console_log and USE_SYSLOG:
         logger.info("Syslog was configured, but --force-console-log overrides it.")
-        for h in logger.handlers[:]: # Make a copy for iteration
+        for h in logger.handlers[:]:  # Make a copy for iteration
             if isinstance(h, logging.handlers.SysLogHandler):
                 logger.removeHandler(h)
-        
+
         # Add console handler if it wasn't already the default
         if not any(isinstance(h, logging.StreamHandler) for h in logger.handlers):
             console_handler = logging.StreamHandler(sys.stdout)
-            console_formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+            console_formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
             console_handler.setFormatter(console_formatter)
             logger.addHandler(console_handler)
         logger.info("Logging forced to console.")
-
 
     # --- File Path Validation and Canonicalization ---
     try:
@@ -232,7 +240,7 @@ def main():
     if not os.access(canonical_filepath, os.R_OK):
         logger.error(f"Input file is not readable (permission denied): '{canonical_filepath}'")
         sys.exit(1)
-    
+
     logger.info(f"Request to generate thumbnails for: '{canonical_filepath}'")
 
     # --- Process Thumbnails ---
@@ -242,7 +250,7 @@ def main():
         # the overall operation is marked as not entirely successful.
         if not create_thumbnail_for_size(canonical_filepath, size_enum):
             overall_success = False
-    
+
     if overall_success:
         logger.info(
             f"All requested thumbnail operations for '{canonical_filepath}' completed. "
@@ -260,4 +268,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-

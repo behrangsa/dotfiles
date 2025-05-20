@@ -14,8 +14,8 @@ import base64
 import os
 import re
 import sys
-import subprocess # For running exiftool
-import shutil     # For checking if exiftool exists
+import subprocess  # For running exiftool
+import shutil  # For checking if exiftool exists
 from typing import List, Tuple, Optional, Set
 from PIL import Image, UnidentifiedImageError
 from io import BytesIO
@@ -26,10 +26,26 @@ OLLAMA_MODEL = "gemma3:latest"
 # Formats generally known to support metadata (EXIF, IPTC, XMP) - used for filtering and warnings
 # Keep lowercase for easier matching
 METADATA_SUPPORTING_FORMATS_LOWER: Set[str] = {
-    "jpeg", "jpg", "tiff", "tif", "png", "webp", "heif", "heic",
-    "avif", "dng", "cr2", "nef", "arw", "orf", "pef", "rw2", "srw"
+    "jpeg",
+    "jpg",
+    "tiff",
+    "tif",
+    "png",
+    "webp",
+    "heif",
+    "heic",
+    "avif",
+    "dng",
+    "cr2",
+    "nef",
+    "arw",
+    "orf",
+    "pef",
+    "rw2",
+    "srw",
 }
 # --- End Configuration ---
+
 
 def setup_logging() -> None:
     """Configure basic logging (placeholder for future logging implementation)."""
@@ -48,18 +64,18 @@ def sanitize_filename(filename_base: str, extension: str = "") -> str:
         A sanitized filename with extension
     """
     filename_base = filename_base.lower()
-    filename_base = re.sub(r'[\s_-]+', '_', filename_base)
+    filename_base = re.sub(r"[\s_-]+", "_", filename_base)
     # Allow alphanumeric, underscore, hyphen
-    filename_base = re.sub(r'[^\w\-]+', '', filename_base)
+    filename_base = re.sub(r"[^\w\-]+", "", filename_base)
     # Remove leading/trailing underscores/hyphens from the base name
-    filename_base = filename_base.strip('_-')
+    filename_base = filename_base.strip("_-")
     if not filename_base:
         filename_base = "image_analysis_result"
     # Limit base name length (optional, e.g., 100 chars)
     filename_base = filename_base[:100]
     # Ensure extension starts with a dot and is lowercase
-    if extension and not extension.startswith('.'):
-        extension = '.' + extension
+    if extension and not extension.startswith("."):
+        extension = "." + extension
     return f"{filename_base}{extension.lower()}"
 
 
@@ -77,7 +93,7 @@ def prepare_image_data(image_path: str) -> Tuple[Optional[str], Optional[str]]:
     if not image_path or not isinstance(image_path, str):
         print("Error: Invalid image path provided", file=sys.stderr)
         return None, None
-        
+
     # Validate file exists
     abs_image_path = os.path.abspath(image_path)
     if not os.path.exists(abs_image_path):
@@ -109,16 +125,16 @@ def _prepare_with_pil(abs_image_path: str) -> Tuple[Optional[str], Optional[str]
             if not image_format:
                 print("Warning: Pillow could not detect image format directly.")
                 _, ext = os.path.splitext(abs_image_path)
-                image_format = ext.lstrip('.').upper() if ext else None
+                image_format = ext.lstrip(".").upper() if ext else None
             print(f"Detected image format: {image_format or 'Unknown (using extension)'}")
 
             # Determine save format
             save_format = img.format
             if not save_format:
                 _, ext = os.path.splitext(abs_image_path)
-                save_format = ext.lstrip('.').upper()
+                save_format = ext.lstrip(".").upper()
                 if not save_format:
-                    save_format = 'PNG'
+                    save_format = "PNG"
 
             return _save_image_to_base64(img, save_format)
 
@@ -141,16 +157,16 @@ def _save_image_to_base64(
         img_to_save = img
 
         # Convert image mode if needed for the target format
-        if save_format == 'JPEG' and img.mode not in ('RGB', 'L'):
+        if save_format == "JPEG" and img.mode not in ("RGB", "L"):
             print(f"Converting image mode from {img.mode} to RGB for JPEG saving.")
-            img_to_save = img.convert('RGB')
-        elif save_format == 'PNG' and img.mode not in ('RGB', 'RGBA', 'L', 'LA'):
+            img_to_save = img.convert("RGB")
+        elif save_format == "PNG" and img.mode not in ("RGB", "RGBA", "L", "LA"):
             print(f"Converting image mode from {img.mode} to RGBA for PNG analysis.")
-            img_to_save = img.convert('RGBA')
+            img_to_save = img.convert("RGBA")
 
         img_to_save.save(img_byte_arr, format=save_format)
         print(f"Image data prepared using format: {save_format}")
-        base64_image = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
+        base64_image = base64.b64encode(img_byte_arr.getvalue()).decode("utf-8")
         return base64_image, save_format
 
     except Exception as save_err:
@@ -160,14 +176,14 @@ def _save_image_to_base64(
         try:
             img_byte_arr = BytesIO()
             img_to_save = img
-            if img.mode not in ('RGB', 'RGBA', 'L', 'LA'):
+            if img.mode not in ("RGB", "RGBA", "L", "LA"):
                 print(f"Converting image mode from {img.mode} to RGBA for PNG analysis.")
-                img_to_save = img.convert('RGBA')
+                img_to_save = img.convert("RGBA")
 
-            img_to_save.save(img_byte_arr, format='PNG')
+            img_to_save.save(img_byte_arr, format="PNG")
             print("Image data prepared using format: PNG")
-            base64_image = base64.b64encode(img_byte_arr.getvalue()).decode('utf-8')
-            return base64_image, 'PNG'
+            base64_image = base64.b64encode(img_byte_arr.getvalue()).decode("utf-8")
+            return base64_image, "PNG"
         except Exception as e:
             print(f"Error in PNG fallback: {e}", file=sys.stderr)
             return None, None
@@ -182,10 +198,10 @@ def _prepare_with_raw_bytes(abs_image_path: str) -> Tuple[Optional[str], Optiona
             if not image_bytes:
                 print("Error: Fallback failed, read 0 bytes.", file=sys.stderr)
                 return None, None
-            base64_image = base64.b64encode(image_bytes).decode('utf-8')
+            base64_image = base64.b64encode(image_bytes).decode("utf-8")
 
         _, ext = os.path.splitext(abs_image_path)
-        image_format = ext.lstrip('.').upper() if ext else None
+        image_format = ext.lstrip(".").upper() if ext else None
         print(f"Fallback successful. Using extension '{image_format or 'None'}' as format guess.")
         return base64_image, image_format
     except Exception as fallback_e:
@@ -219,23 +235,19 @@ Labels: [label1, label2, label3]
         start_time = time.time()
         response = ollama.chat(
             model=OLLAMA_MODEL,
-            messages=[
-                {
-                    'role': 'user',
-                    'content': prompt,
-                    'images': [base64_image]
-                }
-            ]
+            messages=[{"role": "user", "content": prompt, "images": [base64_image]}],
         )
-        analysis_text = response['message']['content']
+        analysis_text = response["message"]["content"]
         duration = time.time() - start_time
         print(f"Ollama analysis complete ({duration:.2f}s).")
         return analysis_text
 
     except Exception as e:
         print(f"\nError communicating with Ollama: {e}", file=sys.stderr)
-        print(f"Ensure Ollama is running and the model '{OLLAMA_MODEL}' is available.",
-              file=sys.stderr)
+        print(
+            f"Ensure Ollama is running and the model '{OLLAMA_MODEL}' is available.",
+            file=sys.stderr,
+        )
         return None
 
 
@@ -255,7 +267,7 @@ def parse_ollama_response(analysis_text: str) -> Tuple[str, str, List[str]]:
     labels_list = []
 
     try:
-        lines = analysis_text.strip().split('\n')
+        lines = analysis_text.strip().split("\n")
         for line in lines:
             line_lower = line.lower()
             # Use partition for safer splitting
@@ -271,9 +283,9 @@ def parse_ollama_response(analysis_text: str) -> Tuple[str, str, List[str]]:
 
         # Clean up labels - ensure we never return None for labels
         if suggested_labels_str:
-            labels_list = [label.strip().lower()
-                           for label in suggested_labels_str.split(',')
-                           if label.strip()]
+            labels_list = [
+                label.strip().lower() for label in suggested_labels_str.split(",") if label.strip()
+            ]
         else:
             labels_list = ["no_labels_generated"]
 
@@ -287,7 +299,7 @@ def parse_ollama_response(analysis_text: str) -> Tuple[str, str, List[str]]:
 
 
 def analyze_image_with_ollama(
-    image_path: str
+    image_path: str,
 ) -> Tuple[Optional[str], Optional[str], List[str], Optional[str]]:
     """
     Analyzes an image using Ollama and the specified model.
@@ -305,7 +317,7 @@ def analyze_image_with_ollama(
     base64_image, image_format = prepare_image_data(image_path)
     if base64_image is None:
         return None, None, [], None
-    
+
     # Call the Ollama API
     analysis_text = call_ollama_api(base64_image)
     if analysis_text is None:
@@ -325,8 +337,9 @@ def check_exiftool_available() -> bool:
     """
     exiftool_path = shutil.which("exiftool")
     if not exiftool_path:
-        print("Error: 'exiftool' command not found. Cannot write metadata or rename.",
-              file=sys.stderr)
+        print(
+            "Error: 'exiftool' command not found. Cannot write metadata or rename.", file=sys.stderr
+        )
         return False
     return True
 
@@ -350,7 +363,8 @@ def write_metadata(file_path: str, description: str, labels: List[str]) -> bool:
     tags_to_write = []
 
     if description and description not in (
-        "No description generated.", "Failed to parse description."
+        "No description generated.",
+        "Failed to parse description.",
     ):
         tags_to_write.append(f"-XMP-dc:Description={description}")
         tags_to_write.append(f"-IPTC:Caption-Abstract={description}")
@@ -372,9 +386,16 @@ def write_metadata(file_path: str, description: str, labels: List[str]) -> bool:
     try:
         # Add proper charset handling for non-english characters
         env = os.environ.copy()
-        env['EXIFTOOL_CHARSET'] = 'UTF8'
-        result = subprocess.run(cmd, check=True, capture_output=True, text=True,
-                                encoding='utf-8', errors='replace', env=env)
+        env["EXIFTOOL_CHARSET"] = "UTF8"
+        result = subprocess.run(
+            cmd,
+            check=True,
+            capture_output=True,
+            text=True,
+            encoding="utf-8",
+            errors="replace",
+            env=env,
+        )
         print("Exiftool metadata write successful.")
         if result.stderr.strip():
             print(f"Exiftool warnings:\n{result.stderr.strip()}", file=sys.stderr)
@@ -395,15 +416,17 @@ def write_metadata(file_path: str, description: str, labels: List[str]) -> bool:
         return False
 
 
-def rename_file(original_path: str, new_filename_base: str, force: bool = False) -> Tuple[bool, str]:
+def rename_file(
+    original_path: str, new_filename_base: str, force: bool = False
+) -> Tuple[bool, str]:
     """
     Rename a file with the suggested filename.
-    
+
     Args:
         original_path: Path to the original file
         new_filename_base: Base name for the new filename (without extension)
         force: Whether to force overwrite existing files
-        
+
     Returns:
         Tuple of (success, new_path)
     """
@@ -418,41 +441,54 @@ def rename_file(original_path: str, new_filename_base: str, force: bool = False)
 
     # If the original and new paths are the same, skip renaming
     if abs_original_path == new_path:
-        print(f"Suggested filename '{new_full_filename}' is the same as the original. Skipping rename.")
+        print(
+            f"Suggested filename '{new_full_filename}' is the same as the original. Skipping rename."
+        )
         return True, abs_original_path
 
     print(f"Attempting rename: '{original_basename}' -> '{new_full_filename}'")
-    
+
     try:
         # Check if target file exists
         if os.path.exists(new_path):
             if force:
-                 print(f"Warning: Target file '{new_path}' already exists. Forcing rename (will overwrite!).")
-                 os.remove(new_path)
-                 print(f"Removed existing file: '{new_path}'")
+                print(
+                    f"Warning: Target file '{new_path}' already exists. Forcing rename (will overwrite!)."
+                )
+                os.remove(new_path)
+                print(f"Removed existing file: '{new_path}'")
             else:
-                print(f"Error: Target filename '{new_path}' already exists. Rename aborted.", file=sys.stderr)
+                print(
+                    f"Error: Target filename '{new_path}' already exists. Rename aborted.",
+                    file=sys.stderr,
+                )
                 print("Use --force to overwrite.")
                 return False, abs_original_path
 
         os.rename(abs_original_path, new_path)
         print("Rename successful.")
         return True, new_path
-        
+
     except OSError as e:
         print(f"Error renaming file: {e}", file=sys.stderr)
         return False, abs_original_path
-        
+
     except Exception as e:
         print(f"An unexpected error occurred during rename: {e}", file=sys.stderr)
         return False, abs_original_path
 
-def write_metadata_and_rename(original_path: str, new_filename_base: str, 
-                            description: Optional[str], labels: List[str], 
-                            image_format: Optional[str], force: bool = False) -> Tuple[bool, str]:
+
+def write_metadata_and_rename(
+    original_path: str,
+    new_filename_base: str,
+    description: Optional[str],
+    labels: List[str],
+    image_format: Optional[str],
+    force: bool = False,
+) -> Tuple[bool, str]:
     """
     Writes metadata using exiftool and renames the file.
-    
+
     Args:
         original_path: Path to the original image file
         new_filename_base: The suggested new filename base (without extension)
@@ -460,30 +496,31 @@ def write_metadata_and_rename(original_path: str, new_filename_base: str,
         labels: A list of labels (keywords) to write
         image_format: The detected image format (used for warning)
         force: Whether to force overwrite existing files
-        
+
     Returns:
         Tuple of (success, new_path)
     """
     print("\n--- Applying Changes ---")
-    
+
     # Write metadata
     metadata_success = write_metadata(original_path, description, labels)
-    
+
     # Rename the file
     rename_success, new_path = rename_file(original_path, new_filename_base, force)
-    
+
     # Operation is successful only if both steps succeeded
     return metadata_success and rename_success, new_path
+
 
 def process_single_file(file_path: str, write_changes: bool, force_write: bool) -> Tuple[bool, str]:
     """
     Analyzes and optionally modifies a single image file.
-    
+
     Args:
         file_path: Path to the image file
         write_changes: Whether to write changes to the file
         force_write: Whether to force changes without confirmation
-        
+
     Returns:
         Tuple of (success, final_path)
     """
@@ -506,19 +543,14 @@ def process_single_file(file_path: str, write_changes: bool, force_write: bool) 
     print(f"Suggested Filename : {suggested_full_filename}")
     print(f"Suggested Desc.    : {description}")
     # Ensure labels is never None before joining
-    label_str = ', '.join(labels) if labels else "None"  # Using if-else to handle potential None
+    label_str = ", ".join(labels) if labels else "None"  # Using if-else to handle potential None
     print(f"Suggested Labels   : {label_str}")
     print(f"Detected Format    : {img_format or 'Unknown'}")
 
     # 3. Write changes if requested
     if write_changes:
         write_success, final_path = write_metadata_and_rename(
-            file_path,
-            filename_base,
-            description,
-            labels,
-            img_format,
-            force=force_write
+            file_path, filename_base, description, labels, img_format, force=force_write
         )
         success = write_success
     else:
@@ -537,28 +569,31 @@ def parse_arguments() -> argparse.Namespace:
         Parsed arguments
     """
     parser = argparse.ArgumentParser(
-        description=(f"Suggest filename and metadata for images using Ollama "
-                     f"({OLLAMA_MODEL}). Processes a single file or a directory."),
-        formatter_class=argparse.RawTextHelpFormatter
+        description=(
+            f"Suggest filename and metadata for images using Ollama "
+            f"({OLLAMA_MODEL}). Processes a single file or a directory."
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
     parser.add_argument(
-        "input_path",
-        help="Path to an image file or a directory containing image files."
+        "input_path", help="Path to an image file or a directory containing image files."
     )
     parser.add_argument(
-        "-w", "--write",
+        "-w",
+        "--write",
         action="store_true",
-        help="Write metadata and rename file(s). Requires 'exiftool'. Prompts for confirmation (unless -f is used)."
+        help="Write metadata and rename file(s). Requires 'exiftool'. Prompts for confirmation (unless -f is used).",
     )
     parser.add_argument(
-        "-f", "--force",
+        "-f",
+        "--force",
         action="store_true",
-        help="Force write/rename without confirmation. Implies -w. Overwrites existing target files during rename. *** Use with extreme caution! ***"
+        help="Force write/rename without confirmation. Implies -w. Overwrites existing target files during rename. *** Use with extreme caution! ***",
     )
     parser.add_argument(
         "--yes",
         action="store_true",
-        help="Automatically answer 'yes' to all prompts. Useful for scripting."
+        help="Automatically answer 'yes' to all prompts. Useful for scripting.",
     )
     return parser.parse_args()
 
@@ -576,17 +611,20 @@ def get_files_to_process(input_path: str) -> Tuple[List[str], bool]:
     abs_input_path = os.path.abspath(input_path)
     files_to_process = []
     is_dir = False
-    
+
     # Handle single file case
     if os.path.isfile(abs_input_path):
         _, ext = os.path.splitext(abs_input_path)
-        if ext.lstrip('.').lower() in METADATA_SUPPORTING_FORMATS_LOWER:
+        if ext.lstrip(".").lower() in METADATA_SUPPORTING_FORMATS_LOWER:
             files_to_process.append(abs_input_path)
         else:
-            print(f"Error: Input file '{abs_input_path}' does not have a supported extension.", file=sys.stderr)
+            print(
+                f"Error: Input file '{abs_input_path}' does not have a supported extension.",
+                file=sys.stderr,
+            )
             print(f"Supported formats: {', '.join(sorted(METADATA_SUPPORTING_FORMATS_LOWER))}")
             return [], False, 1
-    
+
     # Handle directory case
     elif os.path.isdir(abs_input_path):
         is_dir = True
@@ -596,31 +634,37 @@ def get_files_to_process(input_path: str) -> Tuple[List[str], bool]:
             item_path = os.path.join(abs_input_path, item)
             if os.path.isfile(item_path):
                 _, ext = os.path.splitext(item)
-                if ext.lstrip('.').lower() in METADATA_SUPPORTING_FORMATS_LOWER:
+                if ext.lstrip(".").lower() in METADATA_SUPPORTING_FORMATS_LOWER:
                     files_to_process.append(item_path)
                     found_count = found_count + 1
         print(f"Found {found_count} supported image files.")
         if not files_to_process:
             print("No supported image files found in the directory.")
             return [], True, 0
-    
+
     # Handle invalid path
     else:
-        print(f"Error: Input path '{abs_input_path}' is not a valid file or directory.", file=sys.stderr)
+        print(
+            f"Error: Input path '{abs_input_path}' is not a valid file or directory.",
+            file=sys.stderr,
+        )
         return [], False, 1
-        
+
     return files_to_process, is_dir, 0
 
-def confirm_write_operation(files: List[str], is_dir: bool, input_path: str, force: bool) -> Tuple[bool, bool]:
+
+def confirm_write_operation(
+    files: List[str], is_dir: bool, input_path: str, force: bool
+) -> Tuple[bool, bool]:
     """
     Confirm write operation with the user.
-    
+
     Args:
         files: List of files to process
         is_dir: Whether the input is a directory
         input_path: The input path
         force: Whether to force write without confirmation
-        
+
     Returns:
         Tuple of (should_write, proceed_with_write)
     """
@@ -636,12 +680,12 @@ def confirm_write_operation(files: List[str], is_dir: bool, input_path: str, for
             print(f"  - File may be RENAMED based on analysis.")
 
         print(f"  - Existing files with the new name will cause an error unless --force is used.")
-        
+
         try:
             # Check if running in an interactive environment
             if sys.stdin.isatty():
                 confirm = input("Proceed with writing changes? (yes/no): ").strip().lower()
-                if confirm == 'yes':
+                if confirm == "yes":
                     proceed_with_write = True
                 else:
                     print("Write operation cancelled by user.")
@@ -653,7 +697,7 @@ def confirm_write_operation(files: List[str], is_dir: bool, input_path: str, for
         except (EOFError, KeyboardInterrupt):
             print("\nInput interrupted. Operation cancelled.")
             should_write = False
-            
+
     elif force:
         print(f"\n*** WARNING: --force specified! Applying changes WITHOUT confirmation! ***")
         print(f"***          Existing target files during rename WILL BE OVERWRITTEN! ***")
@@ -676,7 +720,7 @@ def main() -> int:
     error_code = 0  # No longer returned from get_files_to_process
     if error_code != 0:
         return error_code
-    
+
     # Exit if no files to process
     if not files_to_process:
         print("No files to process.")
@@ -684,10 +728,11 @@ def main() -> int:
 
     # If --yes option is provided, treat it like force but just for confirmation
     force_confirmation = args.force or args.yes
-    
+
     # Determine if writing should happen and get confirmation
     should_write, proceed_with_write = confirm_write_operation(
-        files_to_process, is_dir, args.input_path, force_confirmation)
+        files_to_process, is_dir, args.input_path, force_confirmation
+    )
 
     # Process the files
     total_files = len(files_to_process)
@@ -702,7 +747,7 @@ def main() -> int:
 
     for i, file_path in enumerate(files_to_process):
         if is_dir:
-            print(f"\n{'='*10} Processing file {i+1} of {total_files} {'='*10}")
+            print(f"\n{'=' * 10} Processing file {i + 1} of {total_files} {'=' * 10}")
 
         write_this_file = should_write and proceed_with_write
         file_success, _ = process_single_file(file_path, write_this_file, args.force)
@@ -723,7 +768,5 @@ def main() -> int:
     return 1 if fail_count > 0 else 0
 
 
-
 if __name__ == "__main__":
     sys.exit(main())
-
