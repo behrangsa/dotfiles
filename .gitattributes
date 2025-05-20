@@ -1,1 +1,2 @@
 zed/settings.json filter=git-crypt diff=git-crypt
+.github/copilot-instructions.md filter=git-crypt diff=git-crypt
