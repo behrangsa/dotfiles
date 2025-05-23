@@ -42,7 +42,7 @@ This will create a symbolic link from `~/.config/zed/settings.json` to this modu
 
 ### Editor Behavior
 
-- Autosave after ~42 seconds
+- Autosave after 5 seconds
 - Copy on terminal select
 - Active pane magnification
 - All-line highlighting
@@ -54,13 +54,14 @@ This will create a symbolic link from `~/.config/zed/settings.json` to this modu
 - Subtle prediction mode
 - Disabled in sensitive files
 - Configurable proxy settings
-- Left-docked agent panel
-- Claude 3 Sonnet models for chat and editing
+- Right-docked agent panel
+- Default model: Gemini 2.5 Pro (via Copilot Chat)
+- Inline assistant model: GPT-4.1 (via Copilot Chat)
 
 ### Language Support
 
 - TypeScript/TSX formatting with Prettier
-- Markdown formatting support
+- Markdown formatting with Prettier
 - LaTeX build configuration
 - Import organization on format
 
