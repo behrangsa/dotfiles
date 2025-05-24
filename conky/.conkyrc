@@ -30,9 +30,9 @@ conky.config = {
     imlib_cache_size = 0,
 
     -- Window position and size
-    gap_x = 30,
-    gap_y = 60,
-    minimum_height = 1350,
+    gap_x = 20,
+    gap_y = 52,
+    minimum_height = 1368,
     minimum_width = 500,
     maximum_width = 500,
 
@@ -47,7 +47,7 @@ conky.config = {
     own_window_class = 'Conky',
     own_window_type = 'desktop',
     own_window_argb_visual = true,
-    own_window_argb_value = 100,
+    own_window_argb_value = 240,
     own_window_colour = '0D1016',
 
     -- Output settings
@@ -68,11 +68,11 @@ conky.config = {
     color1  = '00FFFF',  -- cyan (e.g., titles)
     color2  = '00FF00',  -- green (e.g., normal state)
     color3  = 'FF0000',  -- red (e.g., high usage, warnings)
-    color4  = '33CCFF'  -- light blue (e.g., CPU graph)
+    color4  = '33CCFF'   -- light blue (e.g., CPU graph)
 }
 
 conky.text = [[
-${color1}${font Maple Mono NF:ExtraBold:size=12}Sensory Information${font}${color}
+${color1}${font Maple Mono NF:ExtraBold:size=12}Sensory Information${font}${color}#
 ${color2}
 ${execpi 10 sensors.sh 1}
 ${execpi 10 sensors.sh 2}
@@ -84,7 +84,8 @@ ${top name 2}${goto 220}${top pid 2}${goto 320}${top cpu 2}${alignr}${top mem 2}
 ${top name 3}${goto 220}${top pid 3}${goto 320}${top cpu 3}${alignr}${top mem 3}
 ${top name 4}${goto 220}${top pid 4}${goto 320}${top cpu 4}${alignr}${top mem 4}${color}
 
-${font Maple Mono NF:ExtraBold:size=12}${color1}Disk usage${color}${font}${color2}
+${font Maple Mono NF:ExtraBold:size=12}${color1}Disk usage${color}${font}#
+${color2}
 ${fs_used /} / ${fs_size /}${alignr}${fs_used_perc /}%
 ${fs_bar /}
 ${color}
