@@ -23,6 +23,7 @@ foundation of my Linux development environment.
 | **zed**      | Zed editor configuration                       | Zed                         |
 | **sqlite**   | SQLite database dump utility                   | Python, pandas              |
 | **lmdumpb**  | LMDB database dump utility                     | Python, pandas, python-lmdb |
+| **topydo**   | Configuration for the topydo todo.txt manager  | Python, topydo              |
 
 ## 🛠️ Installation
 
@@ -202,6 +203,22 @@ bu-lmdb-dump --db ./my_lmdb_data_dir
 # Export data from 'my_lmdb_data_dir' to a directory named 'lmdb_export'
 bu-lmdb-dump --db ./my_lmdb_data_dir --output ./lmdb_export
 ```
+
+### topydo
+
+- Curated configuration for the [topydo](https://github.com/topydo/topydo) CLI todo.txt manager.
+- Includes:
+  - `config`: Sets todo.txt and archive file locations, enables 256-color support, and customizes UI colors.
+  - `columns`: Defines custom views (All tasks, Due today, Overdue, Chores, Reading list) with filters and sorting.
+- Installation script symlinks these files to `~/.config/topydo/` with backup and safety checks.
+
+```bash
+# Install just the topydo module
+cd topydo
+./install.sh
+```
+
+- Edit the files in the module directory to customize your setup. See the [topydo documentation](https://topydo.readthedocs.io/en/latest/) for advanced configuration.
 
 ## 📄 License
 

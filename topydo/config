@@ -1,0 +1,9 @@
+[topydo]
+filename = ~/Todos/todo.txt
+archive_filename = ~/Todos/done.txt
+colors = 256
+
+[colorscheme]
+focus_background_color = 239
+
+

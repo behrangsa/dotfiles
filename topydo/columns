@@ -1,0 +1,25 @@
+[all]
+title = All tasks
+filterexpr = 
+sortexpr = +priority,-due
+
+[due_today]
+title = Due today
+filterexpr = due:tod
+sortexpr = +priority,-due
+
+[overdue]
+title = Overdue tasks
+filterexpr = due:<tod
+sortexpr = +priority,-due
+
+[chores]
+title = Chores
+filterexpr = +Chores
+sortexpr = +priority,-due
+
+[reading_list]
+title = Reading list
+filterexpr = +Read
+sortexpr = +priority
+
