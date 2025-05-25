@@ -1,4 +1,5 @@
 = 🧰 behrangsa's Dotfiles
+:toc:
 
 This repository contains configuration files and utilities that form the foundation of my Linux development environment.
 
