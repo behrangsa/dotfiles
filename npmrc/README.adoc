@@ -1,0 +1,123 @@
+= NPM Configuration Module
+
+A meticulously crafted npm configuration module for dotfiles management, designed with precision and attention to detail.
+
+== Overview
+
+This module manages npm configuration through a centralized `.npmrc` file that is symlinked to the user's home directory. The configuration has been carefully optimized for reliability, security, and performance across various network conditions.
+
+== Features
+
+* *Symlink-based management* - Changes to the source file are immediately reflected
+* *Backup protection* - Existing configurations are safely preserved
+* *Optimized settings* - Carefully tuned for stability and performance
+* *VPN-friendly* - Network timeouts and retry logic optimized for slower connections
+* *Security-conscious* - Appropriate audit levels and script execution policies
+
+== Installation
+
+Run the installation script to create a symlink from `~/.npmrc` to this module's configuration:
+
+[source,bash]
+----
+./install.sh
+----
+
+The script will:
+
+1. Create a backup of any existing `~/.npmrc` file
+2. Remove any existing symlinks
+3. Create a new symlink pointing to this module's `.npmrc`
+4. Provide detailed logging throughout the process
+
+== Configuration Highlights
+
+=== Core Settings
+
+* *Exact versions* (`save-exact=true`) - Ensures reproducible builds
+* *Modern lockfile* (`lockfile-version=3`) - Uses npm v8+ format
+* *Engine strictness* (`engine-strict=true`) - Enforces Node.js compatibility
+
+=== Network Optimization
+
+* *Retry logic* - 2 retries with exponential backoff
+* *Connection limits* - 5 concurrent connections maximum
+* *Timeout handling* - 2-second timeout for responsive feedback
+
+=== Security & Maintenance
+
+* *Audit configuration* - High-level vulnerabilities only
+* *Funding messages* - Disabled to reduce noise
+* *Script execution* - Enabled but monitored
+
+=== Cache Management
+
+* *Offline preference* - Disabled for fresh package retrieval
+* *Cache location* - Centralized in `${HOME}/.npm/cache`
+* *Lock handling* - 2 retries with reasonable timeouts
+
+== File Structure
+
+----
+npmrc/
+├── README.adoc          # This documentation
+├── install.sh           # Installation script
+└── .npmrc              # NPM configuration file
+----
+
+== Backup Location
+
+Existing `.npmrc` files are backed up to:
+
+----
+~/.dotfiles_backup/npmrc/.npmrc.backup.YYYYMMDDHHMMSS
+----
+
+== Troubleshooting
+
+=== Permission Issues
+
+If you encounter permission errors, ensure the source file has appropriate read permissions:
+
+[source,bash]
+----
+chmod 644 dotfiles/npmrc/.npmrc
+----
+
+=== Symlink Verification
+
+To verify the symlink was created correctly:
+
+[source,bash]
+----
+ls -la ~/.npmrc
+readlink ~/.npmrc
+----
+
+=== Configuration Testing
+
+Test npm configuration with:
+
+[source,bash]
+----
+npm config list
+npm config get loglevel
+----
+
+== Customization
+
+To modify the configuration:
+
+1. Edit the `.npmrc` file in this directory
+2. Changes will be immediately reflected via the symlink
+3. No reinstallation required
+
+== Notes
+
+* The configuration disables npm audit by default due to conflicts with global flag operations
+* VPN users will benefit from the optimized timeout and retry settings
+* Progress bars are enabled for visual feedback during installations
+
+== Author
+
+Configured with precision and purpose for optimal npm operations.

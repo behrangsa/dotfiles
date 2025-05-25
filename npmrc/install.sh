@@ -1,6 +1,6 @@
 #!/bin/bash
-# install.sh - Copy ~/.npmrc to ./npmrc/.npmrc
-# This script copies the .npmrc file to the user's home directory, sets permissions, and handles backups.
+# install.sh - Create symlink from ~/.npmrc to ./npmrc/.npmrc
+# This script creates a symlink to the .npmrc file in the user's home directory and handles backups.
 
 set -euo pipefail
 
@@ -47,7 +47,13 @@ if [[ $? -ne 0 ]]; then
     exit 1
 fi
 
-# If the symlink exists, remove it
+# If the target already exists and points to our source, we're done
+if [ -L "$TARGET_NPMRC" ] && [ "$(readlink "$TARGET_NPMRC")" = "$SOURCE_NPMRC" ]; then
+    log_success "Symlink already exists and points to correct location."
+    exit 0
+fi
+
+# If the symlink exists but points elsewhere, remove it
 if [ -L "$TARGET_NPMRC" ]; then
     log_info "Removing existing symlink at $TARGET_NPMRC"
     rm "$TARGET_NPMRC"
@@ -68,20 +74,13 @@ if [ -f "$TARGET_NPMRC" ]; then
     fi
 fi
 
-# Copy the source file to the target
-log_info "Copying .npmrc to $TARGET_NPMRC"
-cp "$SOURCE_NPMRC" "$TARGET_NPMRC"
+# Create the symlink
+log_info "Creating symlink from $TARGET_NPMRC to $SOURCE_NPMRC"
+ln -s "$SOURCE_NPMRC" "$TARGET_NPMRC"
 if [[ $? -ne 0 ]]; then
-    log_error "Failed to copy .npmrc file."
+    log_error "Failed to create symlink."
     exit 1
 fi
 
-# Set secure permissions on the target file
-log_info "Setting permissions (600) on target file: $TARGET_NPMRC"
-chmod 600 "$TARGET_NPMRC"
-if [[ $? -ne 0 ]]; then
-    log_warn "Failed to set permissions on target .npmrc file. Proceeding anyway."
-fi
-
-log_success "npmrc module installation complete."
+log_success "npmrc module installation complete. Symlink created successfully."
 exit 0
