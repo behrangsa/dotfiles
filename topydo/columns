@@ -18,8 +18,16 @@ title = Chores
 filterexpr = +Chores
 sortexpr = desc:priority
 
-[reading_list]
-title = Reading list
-filterexpr = +Read
+[to_read_list]
+title = To Read
+filterexpr = +ToRead
 sortexpr = desc:priority
 
+[reading_list]
+title = Reading
+filterexpr = +Reading
+sortexpr = desc:priority
+
+[read_list]
+title = Read List
+filterexpr = +Read
