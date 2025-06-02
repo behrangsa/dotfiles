@@ -8,10 +8,11 @@ conky.config = {
     double_buffer = true,
 
     -- Border settings
-    border_width = 2,
+    default_color = '55baa2',
+    border_width = 10,
     border_inner_margin = 10,
     border_outer_margin = 0,
-    draw_borders = true,
+    draw_borders = false,
 
     -- Text and color settings
     default_color = '0D1016',
@@ -47,7 +48,7 @@ conky.config = {
     own_window_class = 'Conky',
     own_window_type = 'desktop',
     own_window_argb_visual = true,
-    own_window_argb_value = 240,
+    own_window_argb_value = 64,
     own_window_colour = '0D1016',
 
     -- Output settings
@@ -58,10 +59,6 @@ conky.config = {
     show_graph_range = false,
     show_graph_scale = false,
     stippled_borders = 0,
-
-    default_color = '55baa2',
-    draw_borders = true,
-    border_width = 10,
 
     -- Custom colors for graphs/bars
     -- These are still useful for setting default_color or for use with ${color ...}
