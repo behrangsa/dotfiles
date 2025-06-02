@@ -14,7 +14,6 @@ conky.config = {
     draw_borders = true,
 
     -- Text and color settings
-    default_color = '0D1016',
     default_outline_color = white,
     default_shade_color = white,
     draw_outline = false,
@@ -31,8 +30,8 @@ conky.config = {
 
     -- Window position and size
     gap_x = 20,
-    gap_y = 52,
-    minimum_height = 1368,
+    gap_y = 43,
+    minimum_height = 1386,
     minimum_width = 500,
     maximum_width = 500,
 
@@ -47,7 +46,7 @@ conky.config = {
     own_window_class = 'Conky',
     own_window_type = 'desktop',
     own_window_argb_visual = true,
-    own_window_argb_value = 240,
+    own_window_argb_value = 204,
     own_window_colour = '0D1016',
 
     -- Output settings
@@ -60,8 +59,8 @@ conky.config = {
     stippled_borders = 0,
 
     default_color = '55baa2',
-    draw_borders = true,
-    border_width = 10,
+    draw_borders = false,
+    border_width = 0,
 
     -- Custom colors for graphs/bars
     -- These are still useful for setting default_color or for use with ${color ...}
