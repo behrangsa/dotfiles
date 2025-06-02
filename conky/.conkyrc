@@ -8,10 +8,11 @@ conky.config = {
     double_buffer = true,
 
     -- Border settings
-    border_width = 2,
+    default_color = '55baa2',
+    border_width = 10,
     border_inner_margin = 10,
     border_outer_margin = 0,
-    draw_borders = true,
+    draw_borders = false,
 
     -- Text and color settings
     default_outline_color = white,
@@ -57,10 +58,10 @@ conky.config = {
     show_graph_range = false,
     show_graph_scale = false,
     stippled_borders = 0,
-
     default_color = '55baa2',
     draw_borders = false,
     border_width = 0,
+
 
     -- Custom colors for graphs/bars
     -- These are still useful for setting default_color or for use with ${color ...}
