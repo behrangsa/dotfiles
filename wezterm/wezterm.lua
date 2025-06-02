@@ -1,6 +1,9 @@
 local wezterm = require 'wezterm'
 local config = wezterm.config_builder()
 
+-- Provides a large scrollback buffer for user convenience
+local DEFAULT_SCROLLBACK_LINES = 42069
+
 -- Font configuration
 config.font = wezterm.font_with_fallback {
     'Maple Mono NF',
@@ -57,7 +60,7 @@ config.max_fps = 60
 config.enable_wayland = true
 
 -- Scrollback
-config.scrollback_lines = 42069
+config.scrollback_lines = DEFAULT_SCROLLBACK_LINES
 
 -- Key bindings that match Kitty's behavior
 config.keys = {
@@ -65,7 +68,7 @@ config.keys = {
     { key = 'c',          mods = 'CTRL|SHIFT',     action = wezterm.action.CopyTo 'Clipboard' },
     { key = 'v',          mods = 'CTRL|SHIFT',     action = wezterm.action.PasteFrom 'Clipboard' },
 
-    -- Kitty-like window management
+    -- Kitty-like split management
     -- Ctrl+Shift+Enter creates new window (matches Kitty exactly)
     { key = 'Enter',      mods = 'CTRL|SHIFT',     action = wezterm.action.SplitHorizontal { domain = 'CurrentPaneDomain' } },
 
