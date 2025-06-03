@@ -62,7 +62,6 @@ conky.config = {
     draw_borders = false,
     border_width = 0,
 
-
     -- Custom colors for graphs/bars
     -- These are still useful for setting default_color or for use with ${color ...}
     color1  = '00FFFF',  -- cyan (e.g., titles)

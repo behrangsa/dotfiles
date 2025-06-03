@@ -1,0 +1,347 @@
+= Automated Image Metadata Cleaner (incron)
+Behrang Saeedzadeh, Claude Sonnet 4, ChatGPT-4o
+:toc:
+
+A sophisticated automated image metadata cleaning system that monitors directories and instantly processes screenshots and browser captures to remove non-critical metadata while organizing files into date-based directory structures.
+
+[#overview]
+== Overview
+
+This module provides an automated solution for cleaning metadata from image files using `incron` (inotify cron daemon). It monitors specified directories for new image files and automatically:
+
+* Removes non-critical metadata from JPEG and PNG files
+* Renames files with standardized naming conventions
+* Organizes files into year/month/day directory structures
+* Prevents infinite loops through intelligent file handling
+
+The system is designed to handle both Ubuntu Screenshots and Vivaldi browser captures with specialized filename processing for each type.
+
+[#features]
+== Features
+
+=== Automated Processing
+
+* *Real-time monitoring* - Instant processing when files are saved
+* *Dual directory support* - Monitors both Screenshots and Vivaldi Captures
+* *Metadata cleaning* - Uses `exiftool` and `pngcrush` for comprehensive cleaning
+* *Safe operations* - Lock files prevent concurrent processing
+
+=== File Organization
+
+* *Date-based structure* - Automatically creates `YYYY/MM/DD` directories
+* *Standardized naming* - Consistent filename formats across all processed files
+* *Extension marking* - Adds `.ready` extension to indicate processed files
+* *Pattern recognition* - Specialized handling for different capture types
+
+=== Robust Design
+
+* *Infinite loop prevention* - Multiple safeguards against retriggering
+* *Dependency checking* - Validates required tools before processing
+* *Comprehensive logging* - Detailed debug logs for troubleshooting
+* *Manual execution* - Can be run manually with debug options
+
+[#installation]
+== Installation
+
+Run the installation script to set up automated monitoring:
+
+[source,bash]
+----
+./install.sh
+----
+
+The script will:
+
+1. Create a symlink to `cleanmeta` in `~/.local/bin/`
+2. Set up `incron` entries for both monitored directories
+3. Create necessary directory structures
+4. Validate all dependencies
+5. Configure automatic startup
+
+[#file-processing]
+== File Processing
+
+=== Ubuntu Screenshots
+
+*Pattern:* `Screenshot from YYYY-MM-DD HH-MM-SS.ext`
+
+*Example transformation:*
+[source]
+----
+Screenshot from 2025-06-03 18-50-40.png
+→ 2025/06/03/2025-06-03_18-50-40_screenshot.ready.png
+----
+
+=== Vivaldi Captures
+
+*Pattern:* `YYYY-MM-DD HH.MM.SS domain.com alphanumeric.ext`
+
+*Example transformation:*
+[source]
+----
+2025-04-27 09.08.06 aistudio.google.com 498f91e50770.png
+→ 2025/04/27/2025-04-27_09-08-06_aistudio.google.com.ready.png
+----
+
+=== Metadata Cleaning
+
+==== JPEG Files (using exiftool)
+* Removes all metadata except essential EXIF data
+* Preserves image dimensions, color space, and orientation
+* Strips maker notes, GPS data, and thumbnails
+
+==== PNG Files (using pngcrush)
+* Removes textual metadata chunks (`tEXt`, `iTXt`, `zTXt`)
+* Strips timestamp information (`tIME`)
+* Preserves essential color profile and gamma information
+* Optimizes file size with brute-force compression
+
+[#directory-structure]
+== Directory Structure
+
+----
+incron/
+├── README.adoc          # This comprehensive documentation
+├── install.sh           # Installation and configuration script
+└── cleanmeta.sh         # Core metadata cleaning script
+----
+
+=== Monitored Directories
+
+----
+~/Pictures/Screenshots/     # Ubuntu screenshot directory
+~/Pictures/Vivaldi Captures/   # Vivaldi browser captures
+----
+
+=== Output Structure
+
+----
+YYYY/
+└── MM/
+    └── DD/
+        ├── 2025-06-03_14-30-45_screenshot.ready.png
+        ├── 2025-06-03_15-22-10_github.com.ready.png
+        └── 2025-06-03_16-45-33_stackoverflow.com.ready.jpg
+----
+
+[#configuration]
+== Configuration
+
+=== incron Entries
+
+The installation creates two monitoring entries:
+
+[source]
+----
+/home/user/Pictures/Screenshots IN_CLOSE_WRITE cleanmeta.sh $@
+/home/user/Pictures/Vivaldi Captures IN_CLOSE_WRITE cleanmeta.sh $@
+----
+
+=== Manual Execution
+
+The script can be run manually for testing or one-off processing:
+
+[source,bash]
+----
+# Basic usage
+cleanmeta image.png
+
+# Debug mode with verbose output
+cleanmeta --debug screenshot.jpg
+
+# Help information
+cleanmeta --help
+----
+
+[#troubleshooting]
+== Troubleshooting
+
+=== Common Issues
+
+==== incron Not Running
+[source,bash]
+----
+# Check incron service status
+sudo systemctl status incron
+
+# Start incron service
+sudo systemctl start incron
+
+# Enable incron at boot
+sudo systemctl enable incron
+----
+
+==== Permission Errors
+[source,bash]
+----
+# Ensure user is in incron.allow
+echo $USER | sudo tee -a /etc/incron.allow
+
+# Restart incron service
+sudo systemctl restart incron
+----
+
+==== Missing Dependencies
+[source,bash]
+----
+# Install required packages
+sudo apt install incron libimage-exiftool-perl pngcrush
+
+# Verify installations
+which incrontab exiftool pngcrush
+----
+
+=== Verification Commands
+
+[source,bash]
+----
+# Check incron entries
+incrontab -l
+
+# Monitor incron logs
+journalctl -u incron -f
+
+# Test file processing
+cleanmeta --debug test-file.png
+
+# Check debug logs
+tail -f /tmp/cleanmeta.debug.log
+----
+
+[#logs-and-debugging]
+== Logs and Debugging
+
+=== Debug Log Location
+
+All processing activities are logged to:
+----
+/tmp/cleanmeta.debug.log
+----
+
+=== Log Contents
+
+* Timestamp for each operation
+* File processing details
+* Pattern matching results
+* Error messages and warnings
+* Success confirmations
+
+=== Monitoring Live Activity
+
+[source,bash]
+----
+# Watch debug log in real-time
+tail -f /tmp/cleanmeta.debug.log
+
+# Monitor incron system logs
+journalctl -u incron -f
+
+# Test pattern matching
+cleanmeta --debug "Screenshot from 2025-06-03 18-50-40.png"
+----
+
+[#customization]
+== Customization
+
+=== Adding New File Patterns
+
+Edit `cleanmeta.sh` and add pattern matching in the `format_filename()` function:
+
+[source,bash]
+----
+elif [[ "$base_name" =~ your_pattern_here ]]; then
+    # Your custom processing logic
+    local formatted_name="your_format_here"
+    echo "${target_dir}/${formatted_name}"
+----
+
+=== Modifying Metadata Cleaning
+
+Adjust the `exiftool` or `pngcrush` commands in the respective functions:
+
+[source,bash]
+----
+# For JPEG files (clean_jpeg function)
+exiftool -all= -tagsfromfile @ -exif:all "$new_file" -overwrite_original
+
+# For PNG files (clean_png function)
+pngcrush -rem text -rem time -reduce -brute -ow "$new_file"
+----
+
+=== Adding New Directories
+
+Modify `install.sh` to include additional monitoring directories:
+
+[source,bash]
+----
+local new_dir="${user_home}/Pictures/NewDirectory"
+local new_entry="${new_dir} IN_CLOSE_WRITE ${script_path} \$@"
+----
+
+[#dependencies]
+== Dependencies
+
+=== System Requirements
+
+* Linux system with inotify support
+* Bash 4.0 or later
+* User permissions for incron configuration
+
+=== Required Packages
+
+[cols="1,2,3"]
+|===
+|Package |Purpose |Installation
+
+|incron
+|File system monitoring
+|`sudo apt install incron`
+
+|libimage-exiftool-perl
+|JPEG metadata manipulation
+|`sudo apt install libimage-exiftool-perl`
+
+|pngcrush
+|PNG optimization and metadata removal
+|`sudo apt install pngcrush`
+|===
+
+=== Optional Tools
+
+[cols="1,2,3"]
+|===
+|Tool |Purpose |Usage
+
+|inotifywait
+|Manual monitoring and debugging
+|`sudo apt install inotify-tools`
+
+|file
+|File type detection
+|Usually pre-installed
+
+|stat
+|File information analysis
+|Usually pre-installed
+|===
+
+== Notes
+
+* The system is designed to be VPN-friendly with appropriate timeout settings
+* Processing is atomic - files are renamed before cleaning to prevent re-triggering
+* The `.ready` extension serves as both a completion marker and loop prevention
+* All original file attributes and timestamps are preserved where possible
+* The system gracefully handles files with spaces and special characters in names
+
+== Security Considerations
+
+* Scripts run with user permissions only
+* No elevated privileges required for normal operation
+* File processing is restricted to monitored directories
+* Lock files prevent concurrent access issues
+
+== Author
+
+Engineered with the assistance of Claude AI, for precision for seamless
+automated removal of non-essential metadata from Gnome screenshots and Vivaldi
+captures.
