@@ -25,6 +25,7 @@ This repository contains configuration files and utilities that form the foundat
 | *sqlite* | SQLite database dump utility | Python, pandas
 | *lmdumpb* | LMDB database dump utility | Python, pandas, python-lmdb
 | *topydo* | Configuration for the topydo todo.txt manager | Python, topydo
+| *incron* | Automatic screenshot metadata cleaning | incron daemon, exiftool, pngcrush
 |===
 
 == 🛠️ Installation
@@ -220,6 +221,33 @@ cd topydo
 ----
 
 Edit the files in the module directory to customize your setup. See the link:https://topydo.readthedocs.io/en/latest/[topydo documentation] for advanced configuration.
+
+=== incron
+
+Automatic screenshot metadata cleaning system using incron filesystem event monitoring. Monitors the `~/Pictures/Screenshots` directory for new image files (PNG, JPG, JPEG) and automatically cleans non-critical metadata while organizing them into date-based directory structures.
+
+Features:
+* Automatic metadata removal from screenshots using `exiftool` (JPEG) and `pngcrush` (PNG)
+* Smart filename formatting and date-based organization (YYYY/MM/DD structure)
+* Support for Ubuntu Screenshots and Vivaldi Capture filename patterns
+* Prevents infinite loops by adding `.ready` suffix to processed files
+* Comprehensive logging and error handling
+
+[source,bash]
+----
+# The incron daemon monitors for file creation events:
+# ~/Pictures/Screenshots IN_CREATE /path/to/cleanmeta.sh $@/$#
+
+# Manual usage of the cleaning script
+cleanmeta.sh screenshot.png
+cleanmeta.sh --debug photo.jpg
+
+# View incron configuration
+incrontab -l
+
+# Edit incron configuration
+incrontab -e
+----
 
 == 📄 License
 
