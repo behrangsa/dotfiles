@@ -92,7 +92,7 @@ format_filename() {
     local dir_name=$(dirname "$file")
 
     # Extract date and time from screenshot filename
-    log_info "Processing filename: '$base_name'" >&2
+    log_info "Processing filename: '$base_name'"
     if [[ "$base_name" =~ Screenshot\ from\ ([0-9]{4})-([0-9]{2})-([0-9]{2})\ ([0-9]{2})-([0-9]{2})-([0-9]{2}) ]]; then
         local year="${BASH_REMATCH[1]}"
         local month="${BASH_REMATCH[2]}"
