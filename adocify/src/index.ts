@@ -37,6 +37,7 @@ interface ConversionOptions {
   verbose: boolean;
   pattern: string;
   styleGuide: string;
+  directory: string;
 }
 
 interface ConversionContext {
@@ -200,22 +201,25 @@ class MarkdownConverter {
   async processModule(
     mdPath: string,
     styleGuide: string,
-    options: Pick<ConversionOptions, 'verbose'>
+    options: Pick<ConversionOptions, 'verbose' | 'directory'>
   ): Promise<ConversionResult> {
     const moduleDir = path.dirname(mdPath);
     const moduleName = path.basename(moduleDir);
+    const absoluteModuleDir = path.resolve(options.directory, moduleDir);
     const adocPath = path.join(moduleDir, 'README.adoc');
+    const absoluteAdocPath = path.resolve(options.directory, adocPath);
 
-    Logger.processing(`Processing module: ${moduleName}`);
+    Logger.processing(`Processing module: ${moduleName} (${absoluteModuleDir})`);
 
     try {
-      const markdown = await FileUtils.readSafe(mdPath);
+      const absoluteMdPath = path.resolve(options.directory, mdPath);
+      const markdown = await FileUtils.readSafe(absoluteMdPath);
       if (!markdown.trim()) {
-        Logger.warning(`Skipping empty README.md in ${moduleName}`);
+        Logger.warning(`Skipping empty README.md in ${moduleName} (${absoluteModuleDir})`);
         return { success: false, moduleName, error: 'Empty markdown file' };
       }
 
-      const moduleFiles = await FileUtils.getModuleFiles(moduleDir);
+      const moduleFiles = await FileUtils.getModuleFiles(absoluteModuleDir);
       const context: ConversionContext = {
         markdown,
         styleGuide,
@@ -226,17 +230,18 @@ class MarkdownConverter {
       const asciidoc = await this.aiConverter.convert(context);
 
       if (!asciidoc.trim()) {
-        Logger.warning(`No content generated for ${moduleName}, skipping`);
+        Logger.warning(`No content generated for ${moduleName} (${absoluteModuleDir}), skipping`);
         return { success: false, moduleName, error: 'No content generated' };
       }
 
-      await FileUtils.writeResult(adocPath, asciidoc);
-      Logger.success(`Converted ${mdPath} to ${adocPath}`);
+      await FileUtils.writeResult(absoluteAdocPath, asciidoc);
+      Logger.success(`Converted ${absoluteMdPath} to ${absoluteAdocPath}`);
       Logger.verbose(`Generated ${asciidoc.length} characters`, options.verbose);
 
-      return { success: true, moduleName, outputPath: adocPath };
+      return { success: true, moduleName, outputPath: absoluteAdocPath };
     } catch (error) {
-      const errorMessage = `Failed to process ${mdPath}: ${(error as Error).message}`;
+      const absoluteMdPath = path.resolve(options.directory, mdPath);
+      const errorMessage = `Failed to process ${absoluteMdPath}: ${(error as Error).message}`;
       Logger.error(errorMessage);
       return { success: false, moduleName, error: errorMessage };
     }
@@ -244,14 +249,15 @@ class MarkdownConverter {
 
   async convertAll(options: ConversionOptions): Promise<ConversionResult[]> {
     Logger.info('Starting Markdown to AsciiDoc conversion');
+    Logger.info(`Target directory: ${path.resolve(options.directory)}`);
     const startTime = Date.now();
 
-    const styleGuide = await this.loadStyleGuide(options.styleGuide, options.verbose);
+    const styleGuide = await this.loadStyleGuide(options.styleGuide, options.verbose, options.directory);
     if (!styleGuide) {
       throw new Error(`Style guide not found at ${options.styleGuide}`);
     }
 
-    const mdFiles = await this.findMarkdownFiles(options.pattern, options.styleGuide);
+    const mdFiles = await this.findMarkdownFiles(options.pattern, options.styleGuide, options.directory);
     if (mdFiles.length === 0) {
       Logger.info('No README.md files found');
       return [];
@@ -259,7 +265,10 @@ class MarkdownConverter {
 
     Logger.info(`Found ${mdFiles.length} modules to convert`);
     if (options.verbose) {
-      mdFiles.forEach(file => Logger.verbose(file, true));
+      mdFiles.forEach(file => {
+        const absolutePath = path.resolve(options.directory, file);
+        Logger.verbose(absolutePath, true);
+      });
     }
 
     const results = await this.processFilesWithConcurrency(mdFiles, styleGuide, options);
@@ -273,19 +282,23 @@ class MarkdownConverter {
     return results;
   }
 
-  private async loadStyleGuide(styleGuidePath: string, verbose: boolean): Promise<string> {
-    const styleGuide = await FileUtils.readSafe(styleGuidePath);
+  private async loadStyleGuide(styleGuidePath: string, verbose: boolean, directory: string): Promise<string> {
+    const absoluteStyleGuidePath = path.resolve(directory, styleGuidePath);
+    const styleGuide = await FileUtils.readSafe(absoluteStyleGuidePath);
     if (!styleGuide.trim()) {
-      Logger.error(`Style guide not found at ${styleGuidePath}`);
+      Logger.error(`Style guide not found at ${absoluteStyleGuidePath}`);
       return '';
     }
 
-    Logger.verbose(`Using style guide: ${styleGuidePath}`, verbose);
+    Logger.verbose(`Using style guide: ${absoluteStyleGuidePath}`, verbose);
     return styleGuide;
   }
 
-  private async findMarkdownFiles(pattern: string, styleGuidePath: string): Promise<string[]> {
+  private async findMarkdownFiles(pattern: string, styleGuidePath: string, directory: string): Promise<string[]> {
+    const absoluteDirectory = path.resolve(directory);
+    
     return glob(pattern, {
+      cwd: absoluteDirectory,
       ignore: [...CONFIG.IGNORE_PATTERNS, styleGuidePath],
     });
   }
@@ -305,8 +318,9 @@ class MarkdownConverter {
 
 // Environment checker
 class EnvironmentChecker {
-  static check(): void {
+  static check(directory: string = process.cwd()): void {
     Logger.info('Environment Check');
+    Logger.info(`Target directory: ${path.resolve(directory)}`);
 
     // Check API key
     try {
@@ -321,16 +335,17 @@ class EnvironmentChecker {
     Logger.info(`Node.js version: ${nodeVersion}`);
 
     // Check style guide (async, fire and forget)
-    FileUtils.readSafe(CONFIG.DEFAULTS.STYLE_GUIDE_PATH)
+    const absoluteStyleGuidePath = path.resolve(directory, CONFIG.DEFAULTS.STYLE_GUIDE_PATH);
+    FileUtils.readSafe(absoluteStyleGuidePath)
       .then(content => {
         if (content.trim()) {
-          Logger.success(`Style guide found: ${CONFIG.DEFAULTS.STYLE_GUIDE_PATH}`);
+          Logger.success(`Style guide found: ${absoluteStyleGuidePath}`);
         } else {
-          Logger.warning(`Style guide not found: ${CONFIG.DEFAULTS.STYLE_GUIDE_PATH}`);
+          Logger.warning(`Style guide not found: ${absoluteStyleGuidePath}`);
         }
       })
       .catch(() => {
-        Logger.warning(`Style guide not found: ${CONFIG.DEFAULTS.STYLE_GUIDE_PATH}`);
+        Logger.warning(`Style guide not found: ${absoluteStyleGuidePath}`);
       });
   }
 }
@@ -366,6 +381,11 @@ function createCLI(): Command {
       'Path to AsciiDoc style guide',
       CONFIG.DEFAULTS.STYLE_GUIDE_PATH
     )
+    .option(
+      '-d, --directory <path>',
+      'Target directory to search for markdown files',
+      process.cwd()
+    )
     .action(async (options: ConversionOptions) => {
       try {
         Environment.validate();
@@ -380,8 +400,13 @@ function createCLI(): Command {
   program
     .command('check')
     .description('Check environment and dependencies')
-    .action(() => {
-      EnvironmentChecker.check();
+    .option(
+      '-d, --directory <path>',
+      'Target directory to check',
+      process.cwd()
+    )
+    .action((options: { directory: string }) => {
+      EnvironmentChecker.check(options.directory);
     });
 
   return program;

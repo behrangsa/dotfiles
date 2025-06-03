@@ -1,0 +1,70 @@
+= PNGCrush Utility Wrapper
+:toc:
+
+A command-line tool to batch-optimize all PNG files in the current directory using `pngcrush` with best-practice options. Outputs optimized files as `<filename>.ready.png`.
+
+[#features]
+== Features
+
+* *Batch Processing* - Runs `pngcrush` over all PNG files in the current directory
+* *Safe Output* - Skips files already ending with `.ready.png` to avoid recursion
+* *Production-Ready* - Robust error handling, clear output, and safe file handling
+* *Easy Installation* - Installs a wrapper script as `crush-pngs` in your `~/.local/bin`
+
+[#installation]
+== Installation
+
+Run the install script from this directory:
+
+[source,bash]
+----
+./install.sh
+----
+
+This will:
+
+1. Check for `pngcrush` in your PATH
+2. Make the script executable
+3. Symlink it as `crush-pngs` in `~/.local/bin`
+4. Remind you to add `~/.local/bin` to your PATH if needed
+
+[#dependencies]
+== Dependencies
+
+* `pngcrush` (must be installed and available in your PATH)
+* Bash shell
+
+[#usage]
+== Usage
+
+[source,bash]
+----
+crush-pngs
+----
+
+This will process all `.png` files in the current directory, creating optimized versions as `<filename>.ready.png`.
+
+[#example]
+== Example
+
+[source,bash]
+----
+crush-pngs
+----
+
+[#notes]
+== Notes
+
+* Existing `.ready.png` files are skipped.
+* The script will exit with an error if `pngcrush` is not installed.
+* For advanced usage, edit `crush.sh` as needed.
+
+[#files]
+== Files
+
+----
+pngcrush/
+├── README.adoc          # This documentation
+├── install.sh           # Installation script
+└── crush.sh             # Core optimization script
+----
