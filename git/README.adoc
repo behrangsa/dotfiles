@@ -1,0 +1,155 @@
+Here's the converted README.adoc following the specified style guide:
+
+= Git Configuration Module
+:toc:
+
+A standardized Git configuration module that provides consistent development settings across environments, including useful aliases, default settings, and credential management configurations.
+
+[#overview]
+== Overview
+
+This module provides a standardized Git configuration for consistent development across different environments. It includes:
+
+* Streamlined aliases for common operations
+* Default branch and push settings
+* GitHub credential management integration
+* Centralized user identity configuration
+
+[#features]
+== Features
+
+=== Core Configuration
+
+* *Alias system* - Shortcut commands for frequent operations
+* *Branch defaults* - Preconfigured branch naming
+* *Push optimization* - Improved remote repository handling
+* *Terminal output* - Concise display settings
+
+=== Security and Integration
+
+* *GitHub CLI integration* - Secure authentication flow
+* *Credential management* - Supports 2FA and tokens
+* *Identity configuration* - Central user settings
+
+[#installation]
+== Installation
+
+Run the installation script to set up the Git configuration:
+
+[source,bash]
+----
+./install.sh
+----
+
+The script will:
+
+1. Create a symlink from `~/.gitconfig` to the module configuration
+2. Backup any existing Git configuration
+3. Validate required dependencies
+
+[#configuration-details]
+== Configuration Details
+
+=== Aliases
+
+[cols="1,2,3"]
+|===
+| Alias | Command | Description
+
+| `s`, `st`
+| `status`
+| Check repository status
+
+| `c`, `cm`
+| `commit`
+| Create a commit
+
+| `co`
+| `checkout`
+| Switch branches or restore files
+
+| `br`
+| `branch`
+| List, create, or delete branches
+
+| `lg`
+| `log --oneline --graph --decorate --all --author-date-order`
+| View decorated commit history graph
+
+| `last`
+| `log -1 HEAD`
+| Show the last commit
+
+| `unstage`
+| `reset HEAD --`
+| Remove files from staging area
+|===
+
+=== Default Settings
+
+* Default branch name: `master`
+* Push settings optimized for remote repositories
+* GitHub credential helper using GitHub CLI
+* Terminal output configured with `cat` pager
+
+[#customization]
+== Customization
+
+To customize your Git configuration:
+
+1. Edit the `.gitconfig` file in this directory
+2. Run the installation script again to update the symlink
+
+[#integration]
+== Integration with GitHub CLI
+
+This configuration uses GitHub CLI (`gh`) for credentials, providing:
+
+* Secure authentication with GitHub
+* Consistent credentials across terminal sessions
+* Support for two-factor authentication (2FA)
+* Token-based authentication
+
+[#requirements]
+== Requirements
+
+* GitHub CLI (`gh`) for credential management
+* Standard Linux/macOS environment
+* Git 2.20 or later recommended
+
+[#troubleshooting]
+== Troubleshooting
+
+=== Common Issues
+
+==== Symlink Verification
+[source,bash]
+----
+ls -la ~/.gitconfig
+----
+
+==== GitHub CLI Check
+[source,bash]
+----
+gh --version
+----
+
+==== Permission Issues
+[source,bash]
+----
+ls -la ~/.gitconfig .gitconfig
+----
+
+=== Diagnostic Commands
+
+[source,bash]
+----
+# Verify Git configuration
+git config --list
+
+# Check alias functionality
+git st
+
+# Test GitHub authentication
+gh auth status
+----

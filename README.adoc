@@ -26,6 +26,7 @@ This repository contains configuration files and utilities that form the foundat
 | *lmdumpb* | LMDB database dump utility | Python, pandas, python-lmdb
 | *topydo* | Configuration for the topydo todo.txt manager | Python, topydo
 | *incron* | Automatic screenshot metadata cleaning | incron daemon, exiftool, pngcrush
+| *adocify* | AI-powered Markdown to AsciiDoc converter | Node.js, TypeScript, OpenAI API
 |===
 
 == 🛠️ Installation
@@ -247,6 +248,35 @@ incrontab -l
 
 # Edit incron configuration
 incrontab -e
+----
+
+=== adocify
+
+AI-powered Markdown to AsciiDoc converter using DeepSeek Reasoner for intelligent documentation transformation. A TypeScript/Node.js CLI tool that analyzes project structure and converts README.md files to AsciiDoc format with consistent styling.
+
+Features:
+* Context-aware conversion using AI analysis of module files and structure
+* Style consistency following a reference AsciiDoc guide
+* Concurrent processing with configurable rate limits
+* Production-ready error handling and comprehensive logging
+* CLI interface with multiple conversion options
+
+[source,bash]
+----
+# Install dependencies and build
+cd adocify && npm install && npm run build
+
+# Convert all README.md files in project
+adocify convert
+
+# Convert with verbose output and custom concurrency
+adocify convert --verbose --concurrency 3
+
+# Convert specific files using glob pattern
+adocify convert --pattern "src/**/README.md"
+
+# Check environment and dependencies
+adocify check
 ----
 
 == 📄 License

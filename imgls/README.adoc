@@ -1,0 +1,93 @@
+= imgls
+:toc:
+
+A terminal utility that displays images in a grid layout with pagination.
+
+[#description]
+== Description
+
+The `imgls` utility displays images in a terminal grid with an adjustable number of columns, automatic pagination, and truncated filenames. It's perfect for quickly browsing image directories in terminal environments that support kitty's image protocol.
+
+[#features]
+== Features
+
+* *Grid display* - Configurable number of columns
+* *Automatic pagination* - Handles large image collections
+* *Smart filename truncation* - Preserves readability with ellipsis
+* *Format support* - Works with jpg, jpeg, png, gif, webp, and avif
+* *Error handling* - Options to skip or quit on display failures
+* *Clean terminal restore* - Maintains terminal state on exit
+
+[#prerequisites]
+== Prerequisites
+
+* Kitty terminal emulator
+* `tput` command (usually part of `ncurses`)
+
+[#installation]
+== Installation
+
+The module will be installed automatically when running the main dotfiles install script:
+
+[source,bash]
+----
+./install.sh
+----
+
+This will install the `imgls.sh` script to `~/.local/bin/imgls`.
+
+[#usage]
+== Usage
+
+[source,bash]
+----
+imgls [COLUMNS]
+----
+
+=== Arguments
+
+* `COLUMNS`: (Optional) Number of columns to display (default: 3)
+
+=== Examples
+
+[source,bash]
+----
+# Display images in 3 columns (default)
+imgls
+
+# Display images in 4 columns
+imgls 4
+
+# Display images in 2 columns
+imgls 2
+----
+
+[#key-features]
+== Key Features
+
+* *Grid Layout*: Images displayed in configurable grid with proper spacing
+* *Adaptive Display*: Automatically adjusts to terminal dimensions
+* *Smart Pagination*: Pages through images when they exceed screen space
+* *Filename Display*: Shows truncated filenames below images with ellipsis
+* *Format Support*: Handles common image formats (jpg, jpeg, png, gif, webp, avif)
+* *Error Handling*: Gracefully handles display failures with continue/quit options
+* *Clean Exit*: Restores terminal state on exit or interrupt
+
+[#technical-details]
+== Technical Details
+
+The script uses:
+
+* Terminal dimensions to calculate optimal image placement
+* Kitty's image protocol for image rendering
+* Unicode ellipsis for filename truncation
+* ANSI escape sequences for cursor positioning
+* Trap handlers for clean exit
+
+[#notes]
+== Notes
+
+* Works only in terminals that support the Kitty image protocol
+* Terminal must be able to support image display
+* Screen size affects the number of images displayed per page
+* Each image is scaled to maintain visibility in the grid
