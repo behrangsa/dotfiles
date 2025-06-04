@@ -386,7 +386,3 @@ When files aren't being processed automatically:
 * Limited to Ubuntu Screenshots and Vivaldi Captures patterns
 * Debug logs are not automatically rotated
 * Symlink approach may confuse some file managers
-
-== Author
-
-Engineered with the assistance of Claude AI, for precision automated removal of non-essential metadata from Gnome screenshots and Vivaldi captures, with comprehensive debugging and robust error handling.

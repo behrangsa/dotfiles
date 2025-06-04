@@ -1,0 +1,203 @@
+[[mkicns]]
+= mkicns: Automated ICNS Icon Generator
+:toc:
+
+A robust batch icon generator for macOS, `mkicns` scans a directory for 1024x1024 PNG images, creates multi-resolution icon variants, and packages them into `.icns` files using ImageMagick and `png2icns`. Designed for developers, designers, and power users who need production-quality macOS icons with minimal effort.
+
+[[overview]]
+== Overview
+
+`mkicns` automates the process of creating `.icns` files required for macOS applications. It:
+
+* Scans a specified directory for 1024x1024 PNG files
+* Creates a subdirectory for each image, storing all generated icon sizes
+* Produces 512x512, 256x256, and 128x128 PNG variants using ImageMagick
+* Packages all variants into a single `.icns` file using `png2icns`
+* Outputs the `.icns` file in the original directory, ready for use
+
+[[features]]
+== Features
+
+=== Automated Batch Processing
+
+* *Directory scanning* – Processes all 1024x1024 PNGs in a given directory
+* *Multi-size icon generation* – Automatically creates 512x512, 256x256, and 128x128 PNGs
+* *Subdirectory organization* – Each icon and its variants are grouped in a dedicated folder
+* *ICNS packaging* – Uses `png2icns` to create a standards-compliant `.icns` file
+* *Colorful logging* – Informative, color-coded output for easy monitoring
+
+=== Robust Design
+
+* *Dependency checks* – Verifies `convert` (ImageMagick) and `png2icns` are installed
+* *Error handling* – Skips non-1024x1024 PNGs and reports issues without stopping the batch
+* *Safe file operations* – Avoids overwriting existing files unless explicitly intended
+* *Usage guidance* – Built-in help and usage examples
+
+[[installation]]
+== Installation
+
+Run the installation script to set up the `mkicns` utility:
+
+[source,bash]
+----
+./install.sh
+----
+
+The script will:
+
+1. Make `mkicns.sh` executable
+2. Create a symlink in `~/.local/bin/mkicns`
+3. Check for required dependencies (`convert`, `png2icns`)
+4. Provide usage instructions and verify your `$PATH`
+
+[[usage]]
+== Usage
+
+[source,bash]
+----
+mkicns -d /path/to/pngs
+mkicns --directory ./icons
+----
+
+=== Options
+
+* `-d`, `--directory DIR` – Directory containing 1024x1024 PNG files to process
+* `-h`, `--help` – Show help message and exit
+
+=== Example
+
+[source,bash]
+----
+# Batch convert all 1024x1024 PNGs in ./icons to .icns files
+mkicns -d ./icons
+----
+
+[[how-it-works]]
+== How It Works
+
+For each 1024x1024 PNG file in the specified directory:
+
+. A subdirectory is created with the same basename as the PNG (e.g., `logo.png` → `logo/`)
+. The original PNG is copied into this subdirectory
+. ImageMagick's `convert` generates:
+    * 512x512 PNG
+    * 256x256 PNG
+    * 128x128 PNG
+. `png2icns` combines all PNGs into a single `.icns` file, saved in the original directory
+
+*Example directory structure after processing:*
+
+----
+icons/
+├── logo.png
+├── logo/
+│   ├── logo.png
+│   ├── logo_512x512.png
+│   ├── logo_256x256.png
+│   └── logo_128x128.png
+└── logo.icns
+----
+
+[[file-processing]]
+== File Processing
+
+=== Input Requirements
+
+* PNG files must be exactly 1024x1024 pixels
+* Only files with `.png` extension are processed
+
+=== Output
+
+* `.icns` file in the original directory, named after the source PNG (e.g., `logo.icns`)
+* Subdirectory containing all PNG variants for reference or further use
+
+=== Logging
+
+* Informational, warning, and error messages are color-coded for clarity
+* Skipped files and processing errors are reported, but do not halt the batch
+
+[[dependencies]]
+== Dependencies
+
+=== Required Packages
+
+[cols="1,2,3"]
+|===
+|Package |Purpose |Installation
+
+|ImageMagick
+|Image resizing and format conversion
+|`sudo apt install imagemagick`
+
+|png2icns
+|Packaging PNGs into .icns files
+|See https://github.com/mickelson/png2icns or your package manager
+|===
+
+=== Optional Tools
+
+[cols="1,2,3"]
+|===
+|Tool |Purpose |Usage
+
+|file
+|File type detection
+|Usually pre-installed
+
+|stat
+|File information analysis
+|Usually pre-installed
+|===
+
+[[troubleshooting]]
+== Troubleshooting
+
+=== Common Issues
+
+==== Missing Dependencies
+
+[source,bash]
+----
+# Install required packages
+sudo apt install imagemagick
+# For png2icns, see https://github.com/mickelson/png2icns or use Homebrew/MacPorts on macOS
+----
+
+==== Not in PATH
+
+If `mkicns` is not found after installation, add `~/.local/bin` to your `PATH`:
+
+[source,bash]
+----
+echo 'export PATH="$PATH:$HOME/.local/bin"' >> ~/.bashrc
+source ~/.bashrc
+----
+
+==== Skipped Files
+
+If a file is skipped, ensure it is a PNG and exactly 1024x1024 pixels:
+
+[source,bash]
+----
+identify -format "%wx%h" logo.png
+# Should output: 1024x1024
+----
+
+==== Permission Errors
+
+Ensure you have write permissions for the target directory and its contents.
+
+[[logs-and-debugging]]
+== Logs and Debugging
+
+* All actions are logged to the terminal with color-coded messages
+* Errors and warnings are clearly indicated
+* For debugging, run with a small test set and verify output structure
+
+[[technical-notes]]
+== Technical Notes
+
+* Only PNG files with 1024x1024 dimensions are processed to ensure macOS icon quality
+* Output subdirectories prevent clutter and make it easy to inspect generated assets
+* The script is idempotent: re-running will overwrite existing `.icns` files and PNG variants
+* Designed for Bash 4.0+ and tested on Ubuntu and macOS

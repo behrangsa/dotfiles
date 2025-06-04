@@ -7,26 +7,86 @@ This repository contains configuration files and utilities that form the foundat
 
 [cols="1,2,1", options="header"]
 |===
-| Module | Purpose | Dependencies
+| Module
+| Purpose
+| Dependencies
 
-| *help* | Expert terminal help system using OpenAI API | Python, requests
-| *openai* | Command-line interface for OpenAI API | Python, rich, pygments
-| *npmrc* | NPM configuration with security best practices | Node.js
-| *mkfav* | Generate favicon.ico from images | Bash, ImageMagick
-| *memviz* | Memory usage visualization (treemap) | Python, psutil, matplotlib, squarify
-| *imgsizes* | Image resizing utility | Python, ImageMagick
-| *imgls* | Terminal image grid display | Bash, Kitty terminal
-| *imgtag* | AI-powered image metadata tagging | Python, Ollama, exiftool
-| *git* | Git configuration | Git
-| *emptybye* | Empty directory removal tool | Python 3
-| *conky* | System monitoring dashboard | Conky
-| *thumbgen* | Thumbnail generation utility | Python, Pillow
-| *zed* | Zed editor configuration | Zed
-| *sqlite* | SQLite database dump utility | Python, pandas
-| *lmdumpb* | LMDB database dump utility | Python, pandas, python-lmdb
-| *topydo* | Configuration for the topydo todo.txt manager | Python, topydo
-| *incron* | Automatic screenshot metadata cleaning | incron daemon, exiftool, pngcrush
-| *adocify* | AI-powered Markdown to AsciiDoc converter | Node.js, TypeScript, OpenAI API
+| <<help, *help*>>
+| Expert terminal help system using OpenAI API
+| Python, requests
+
+| <<openai, *openai*>>
+| Command-line interface for OpenAI API
+| Python, rich, pygments
+
+| <<npmrc, *npmrc*>>
+| NPM configuration with security best practices
+| Node.js
+
+| <<mkfav, *mkfav*>>
+| Generate favicon.ico from images
+| Bash, ImageMagick
+
+| <<mkicns, *mkicns*>>
+| Batch generate macOS .icns icon files from PNGs
+| Bash, ImageMagick, png2icns
+
+| <<memviz, *memviz*>>
+| Memory usage visualization (treemap)
+| Python, psutil, matplotlib, squarify
+
+| <<imgsizes, *imgsizes*>>
+| Image resizing utility
+| Python, ImageMagick
+
+| <<imgls, *imgls*>>
+| Terminal image grid display
+| Bash, Kitty terminal
+
+| <<imgtag, *imgtag*>>
+| AI-powered image metadata tagging
+| Python, Ollama, exiftool
+
+| <<git, *git*>>
+| Git configuration
+| Git
+
+| <<emptybye, *emptybye*>>
+| Empty directory removal tool
+| Python 3
+
+| <<conky, *conky*>>
+| System monitoring dashboard
+| Conky
+
+| <<thumbgen, *thumbgen*>>
+| Thumbnail generation utility
+| Python, Pillow
+
+| <<zed, *zed*>>
+| Zed editor configuration
+| Zed
+
+| <<sqlite, *sqlite*>>
+| SQLite database dump utility
+| Python, pandas
+
+| <<lmdumpb, *lmdumpb*>>
+| LMDB database dump utility
+| Python, pandas, python-lmdb
+
+| <<topydo, *topydo*>>
+| Configuration for the topydo todo.txt manager
+| Python, topydo
+
+| <<incron, *incron*>>
+| Automatic screenshot metadata cleaning
+| incron daemon, exiftool, pngcrush
+
+| <<adocify, *adocify*>>
+| AI-powered Markdown to AsciiDoc converter
+| Node.js, TypeScript, OpenAI API
+
 |===
 
 == 🛠️ Installation
@@ -43,6 +103,7 @@ cd ~/.dotfiles
 
 == 🧾 Module Details
 
+[[help]]
 === help
 
 Provides expert terminal help by leveraging the OpenAI API. Get assistance with commands for various tools like Vim, Bash, and Git.
@@ -59,6 +120,7 @@ bu-help -s bash -p "How do I find and replace text in multiple files"
 bu-help -s git -p "How to squash my last 3 commits"
 ----
 
+[[openai]]
 === openai
 
 A command-line interface to interact with the OpenAI API. List models, manage configurations, and more.
@@ -78,6 +140,7 @@ bu-openai ls models --filter gpt --sort created --pretty-dates
 bu-openai configure
 ----
 
+[[npmrc]]
 === npmrc
 
 * Security-focused configuration
@@ -85,6 +148,7 @@ bu-openai configure
 * Optimized for slow network connections
 * File permissions set to 600 for credentials
 
+[[mkfav]]
 === mkfav
 
 A utility to create multi-resolution `favicon.ico` files (16x16, 32x32, 48x48, 256x256) from a source image. Uses ImageMagick to perform the image conversion and bundling.
@@ -101,6 +165,26 @@ mkfav image.png custom_favicon.ico
 mkfav /path/to/image.jpg /path/to/output/favicon.ico
 ----
 
+[[mkicns]]
+=== mkicns
+
+Batch icon generator for macOS. Scans a directory for 1024x1024 PNG images, creates 512x512, 256x256, and 128x128 variants, and packages them into `.icns` files using ImageMagick and `png2icns`.
+
+[source,bash]
+----
+# Batch convert all 1024x1024 PNGs in ./icons to .icns files
+mkicns -d ./icons
+
+# Use a different directory
+mkicns --directory /path/to/pngs
+----
+
+* Each PNG is processed into a subdirectory with all icon sizes
+* Output `.icns` file is saved in the original directory
+* Colorful logging and robust error handling
+* Requires: Bash, ImageMagick (`convert`), and `png2icns`
+
+[[memviz]]
 === memviz
 
 Visualizes memory usage as a treemap. Outputs an image and an optional CSV file of memory consumption.
@@ -111,10 +195,12 @@ Visualizes memory usage as a treemap. Outputs an image and an optional CSV file 
 memviz --output ~/ram_usage.png --csv ~/ram_usage.csv
 ----
 
+[[imgsizes]]
 === imgsizes
 
 A utility for resizing images using ImageMagick. (Example usage to be added)
 
+[[imgtag]]
 === imgtag
 
 AI-powered image tagging, metadata enrichment, and smart renaming utility. Uses Ollama's AI models to automatically generate descriptive filenames, meaningful descriptions, and relevant keywords. Embeds metadata into image files for better organization and can rename files based on content. Features batch processing, preview of suggestions, and safety measures against accidental overwrites.
@@ -126,6 +212,7 @@ imgtag ~/Pictures/001.jpg -w  # Analyze and write metadata
 imgtag ~/Photos/ -f           # Batch process with force overwrite
 ----
 
+[[imgls]]
 === imgls
 
 Displays images from the current directory in a grid within the Kitty terminal. Supports customizable column counts and pagination.
@@ -144,10 +231,12 @@ imgls 4
 imgls 2  # 2-column display with pagination
 ----
 
+[[git]]
 === git
 
 Contains customized Git configurations for an optimized workflow. (Details of specific configurations can be found in the `git` module directory.)
 
+[[emptybye]]
 === emptybye
 
 A utility to find and remove empty directories efficiently using a depth-first search. Handles nested empty directories and parent directories that become empty after child removal. Features a dry-run mode to preview changes, and options for symlink handling and verbose logging.
@@ -162,21 +251,26 @@ emptybye ~/Downloads/unsorted
 ----
 
 == 📊 Conky Dashboard
+[[conky]]
+=== conky
 
 * Real-time system monitoring
 * Temperature, CPU, memory, and disk usage
 * Custom color scheme with transparency support
 
+[[thumbgen]]
 === thumbgen
 
 TODO.
 
+[[zed]]
 === zed
 
 * Configuration files for Zed editor
 * Custom keybindings and themes
 * Optimized for Python, JavaScript, and Markdown editing
 
+[[sqlite]]
 === sqlite
 
 A command-line utility to export tables from an SQLite database to individual HTML files. Dumps all tables from a specified database, saving each as a separate HTML file. Allows specification of an output directory for the exported files.
@@ -190,6 +284,7 @@ bu-sqlite-dump --db mydatabase.db
 bu-sqlite-dump --db mydatabase.db --output ./db_export
 ----
 
+[[lmdumpb]]
 === lmdumpb
 
 A command-line utility to export data from an LMDB (Lightning Memory-Mapped Database) to an HTML file. Facilitates inspection and sharing of LMDB database contents.
@@ -203,6 +298,7 @@ bu-lmdb-dump --db ./my_lmdb_data_dir
 bu-lmdb-dump --db ./my_lmdb_data_dir --output ./lmdb_export
 ----
 
+[[topydo]]
 === topydo
 
 Curated configuration for the link:https://github.com/topydo/topydo[topydo] CLI todo.txt manager.
@@ -223,6 +319,7 @@ cd topydo
 
 Edit the files in the module directory to customize your setup. See the link:https://topydo.readthedocs.io/en/latest/[topydo documentation] for advanced configuration.
 
+[[incron]]
 === incron
 
 Automatic screenshot metadata cleaning system using incron filesystem event monitoring. Monitors the `~/Pictures/Screenshots` directory for new image files (PNG, JPG, JPEG) and automatically cleans non-critical metadata while organizing them into date-based directory structures.
@@ -250,6 +347,7 @@ incrontab -l
 incrontab -e
 ----
 
+[[adocify]]
 === adocify
 
 AI-powered Markdown to AsciiDoc converter using DeepSeek Reasoner for intelligent documentation transformation. A TypeScript/Node.js CLI tool that analyzes project structure and converts README.md files to AsciiDoc format with consistent styling.
