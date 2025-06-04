@@ -28,3 +28,6 @@
 
 [core]
 	pager = cat
+
+[pull]
+	rebase = false
