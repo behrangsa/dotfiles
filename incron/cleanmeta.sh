@@ -23,6 +23,7 @@ log_debug "=== Processing started for $* ==="
 
 # Clean up old lock files
 cleanup_old_locks() {
+    log_debug "Cleaning up old lock files"
     find "$LOCK_DIR" -name "*.lock" -type f -mmin +$((MAX_LOCK_AGE / 60)) -delete 2>/dev/null || true
 }
 
@@ -35,6 +36,7 @@ is_locked() {
 
 # Create lock file
 create_lock() {
+    log_debug "Creating lock for $1"
     local file="$1"
     local lock_file="$LOCK_DIR/$(basename "$file").lock"
     echo $$ > "$lock_file"
@@ -42,6 +44,7 @@ create_lock() {
 
 # Remove lock file
 remove_lock() {
+    log_debug "Removing lock for $1"
     local file="$1"
     local lock_file="$LOCK_DIR/$(basename "$file").lock"
     rm -f "$lock_file"
@@ -49,6 +52,7 @@ remove_lock() {
 
 # Check dependencies
 check_dependencies() {
+    log_debug "Checking dependencies"
     local missing=()
 
     for cmd in exiftool pngcrush; do
@@ -131,6 +135,7 @@ clean_png_metadata() {
 
 # Parse Ubuntu screenshot filename
 parse_ubuntu_screenshot() {
+    log_debug "Parsing Ubuntu screenshot filename: $1"
     local filename="$1"
 
     # Pattern: Screenshot from YYYY-MM-DD HH-MM-SS.ext
@@ -244,8 +249,11 @@ process_file() {
         return 1
     fi
 
-    # Atomic rename to prevent re-triggering incron
+    # Lock based rename to prevent re-triggering incron
     local temp_file="${source_file}.processing"
+    create_lock "$temp_file"
+    trap "remove_lock '$temp_file'" EXIT
+
     if ! mv "$source_file" "$temp_file"; then
         log_debug "ERROR: Failed to rename file for processing: $source_file"
         return 1
