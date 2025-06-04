@@ -1,120 +1,161 @@
 #!/bin/bash
 
-# cleanmeta.sh - A utility to clean non-critical metadata from image files
-#
-# This script is triggered by incron whenever a new image file is saved
-# in the `$USER_HOME/Pictures/Screenshots` directory. It removes non-critical
-# metadata from JPEG and PNG files using `exiftool` and `pngcrush`, respectively.
+# cleanmeta.sh - Automated Image Metadata Cleaner
+# Part of the dotfiles incron system for processing screenshots and browser captures
+# Removes non-critical metadata while organizing files into date-based structures
 
 set -euo pipefail
 
-# Lock file to prevent multiple instances
-LOCK_FILE="/tmp/cleanmeta.lock"
-
-# Debug log file
+# Configuration
 DEBUG_LOG="/tmp/cleanmeta.debug.log"
+LOCK_DIR="/tmp/cleanmeta.locks"
+MAX_LOCK_AGE=300  # 5 minutes
 
-# Color definitions for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[0;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Ensure lock directory exists
+mkdir -p "$LOCK_DIR"
 
-# Log functions
-log_info() {
-    local msg="[INFO] $1"
-    echo -e "${BLUE}${msg}${NC}"
-    echo "$(date '+%Y-%m-%d %H:%M:%S') ${msg}" >> "$DEBUG_LOG"
+# Logging function
+log_debug() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >> "$DEBUG_LOG"
 }
 
-log_success() {
-    local msg="[SUCCESS] $1"
-    echo -e "${GREEN}${msg}${NC}"
-    echo "$(date '+%Y-%m-%d %H:%M:%S') ${msg}" >> "$DEBUG_LOG"
+log_debug "=== Processing started for $* ==="
+
+# Clean up old lock files
+cleanup_old_locks() {
+    find "$LOCK_DIR" -name "*.lock" -type f -mmin +$((MAX_LOCK_AGE / 60)) -delete 2>/dev/null || true
 }
 
-log_warn() {
-    local msg="[WARNING] $1"
-    echo -e "${YELLOW}${msg}${NC}"
-    echo "$(date '+%Y-%m-%d %H:%M:%S') ${msg}" >> "$DEBUG_LOG"
-}
-
-log_error() {
-    local msg="[ERROR] $1"
-    echo -e "${RED}${msg}${NC}" >&2
-    echo "$(date '+%Y-%m-%d %H:%M:%S') ${msg}" >> "$DEBUG_LOG"
-}
-
-# Function to clean JPEG metadata
-clean_jpeg() {
+# Check if file is locked
+is_locked() {
     local file="$1"
-    local new_file
-    new_file=$(format_filename "$file" "jpg" 2>/dev/null)
+    local lock_file="$LOCK_DIR/$(basename "$file").lock"
+    [[ -f "$lock_file" ]]
+}
 
-    # Create directory structure
-    mkdir -p "$(dirname "$new_file")"
+# Create lock file
+create_lock() {
+    local file="$1"
+    local lock_file="$LOCK_DIR/$(basename "$file").lock"
+    echo $$ > "$lock_file"
+}
 
-    mv "$file" "$new_file"
-    log_info "Renamed and moved file to: $new_file"
-    if exiftool -all= -tagsfromfile @ -exif:all "$new_file" -overwrite_original > /dev/null 2>&1; then
-        log_success "Metadata cleaned successfully for: $new_file"
+# Remove lock file
+remove_lock() {
+    local file="$1"
+    local lock_file="$LOCK_DIR/$(basename "$file").lock"
+    rm -f "$lock_file"
+}
+
+# Check dependencies
+check_dependencies() {
+    local missing=()
+
+    for cmd in exiftool pngcrush; do
+        if ! command -v "$cmd" >/dev/null 2>&1; then
+            missing+=("$cmd")
+        fi
+    done
+
+    if [[ ${#missing[@]} -gt 0 ]]; then
+        log_debug "ERROR: Missing dependencies: ${missing[*]}"
+        echo "Error: Missing required dependencies: ${missing[*]}" >&2
+        echo "Install with: sudo apt install libimage-exiftool-perl pngcrush" >&2
+        exit 1
+    fi
+}
+
+# Detect file type
+get_file_type() {
+    local file="$1"
+    local mime_type
+
+    if command -v file >/dev/null 2>&1; then
+        mime_type=$(file -b --mime-type "$file" 2>/dev/null)
+        case "$mime_type" in
+            image/jpeg) echo "jpeg" ;;
+            image/png) echo "png" ;;
+            *) echo "unknown" ;;
+        esac
     else
-        log_error "Failed to clean metadata for: $new_file"
+        # Fallback to extension
+        case "${file,,}" in
+            *.jpg|*.jpeg) echo "jpeg" ;;
+            *.png) echo "png" ;;
+            *) echo "unknown" ;;
+        esac
+    fi
+}
+
+# Clean metadata from JPEG files
+clean_jpeg_metadata() {
+    local file="$1"
+    local temp_file="${file}.tmp"
+
+    log_debug "Cleaning JPEG metadata from: $file"
+
+    # Use exiftool to remove all metadata except essential EXIF
+    if exiftool -overwrite_original \
+        -all= \
+        -ColorSpace -ExifImageWidth -ExifImageHeight \
+        -Orientation -XResolution -YResolution \
+        -ResolutionUnit -YCbCrPositioning \
+        "$file" 2>/dev/null; then
+        log_debug "Successfully cleaned JPEG metadata: $file"
+        return 0
+    else
+        log_debug "ERROR: Failed to clean JPEG metadata: $file"
         return 1
     fi
 }
 
-# Function to clean PNG metadata
-clean_png() {
+# Clean metadata from PNG files
+clean_png_metadata() {
     local file="$1"
-    local new_file
-    new_file=$(format_filename "$file" "png" 2>/dev/null)
+    local temp_file="${file}.tmp"
 
-    # Create directory structure
-    mkdir -p "$(dirname "$new_file")"
+    log_debug "Cleaning PNG metadata from: $file"
 
-    mv "$file" "$new_file"
-    log_info "Renamed and moved file to: $new_file"
-    if pngcrush -rem text -rem time -reduce -brute -ow "$new_file" > /dev/null 2>&1; then
-        log_success "Metadata cleaned successfully for: $new_file"
+    # Use pngcrush to remove textual metadata and optimize
+    if pngcrush -rem tEXt -rem iTXt -rem zTXt -rem tIME -q \
+        "$file" "$temp_file" 2>/dev/null; then
+        mv "$temp_file" "$file"
+        log_debug "Successfully cleaned PNG metadata: $file"
+        return 0
     else
-        log_error "Failed to clean metadata for: $new_file"
+        rm -f "$temp_file"
+        log_debug "ERROR: Failed to clean PNG metadata: $file"
         return 1
     fi
 }
 
-# Function to format filename and create date-based directory structure
-format_filename() {
-    local file="$1"
-    local extension="$2"
-    local base_name=$(basename "$file")
-    local dir_name=$(dirname "$file")
+# Parse Ubuntu screenshot filename
+parse_ubuntu_screenshot() {
+    local filename="$1"
 
-    # Extract date and time from screenshot filename
-    log_info "Processing filename: '$base_name'"
-    if [[ "$base_name" =~ Screenshot\ from\ ([0-9]{4})-([0-9]{2})-([0-9]{2})\ ([0-9]{2})-([0-9]{2})-([0-9]{2}) ]]; then
+    # Pattern: Screenshot from YYYY-MM-DD HH-MM-SS.ext
+    if [[ "$filename" =~ ^Screenshot\ from\ ([0-9]{4})-([0-9]{2})-([0-9]{2})\ ([0-9]{2})-([0-9]{2})-([0-9]{2})\.(.+)$ ]]; then
         local year="${BASH_REMATCH[1]}"
         local month="${BASH_REMATCH[2]}"
         local day="${BASH_REMATCH[3]}"
         local hour="${BASH_REMATCH[4]}"
         local minute="${BASH_REMATCH[5]}"
         local second="${BASH_REMATCH[6]}"
+        local extension="${BASH_REMATCH[7]}"
 
-        # Create formatted filename: date_time_screenshot.ready.ext
-        local formatted_name="${year}-${month}-${day}_${hour}-${minute}-${second}_screenshot.ready.${extension}"
+        echo "${year}/${month}/${day}/${year}-${month}-${day}_${hour}-${minute}-${second}_screenshot.ready.${extension}"
+        return 0
+    fi
 
-        # Convert to lowercase and replace spaces with underscores
-        formatted_name=$(echo "$formatted_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '_')
+    return 1
+}
 
-        # Create date-based directory structure
-        local target_dir="${year}/${month}/${day}"
-        log_info "Generated target directory: '$target_dir'" >&2
-        log_info "Generated filename: '$formatted_name'" >&2
+# Parse Vivaldi capture filename
+parse_vivaldi_capture() {
+    local filename="$1"
 
-        echo "${target_dir}/${formatted_name}"
-    elif [[ "$base_name" =~ ^([0-9]{4})-([0-9]{2})-([0-9]{2})\ ([0-9]{2})\.([0-9]{2})\.([0-9]{2})\ ([^\ ]+)\ [a-zA-Z0-9]+\.(png|jpg|jpeg)$ ]]; then
-        # Vivaldi Captures pattern: YYYY-MM-DD HH.MM.SS domain_name alphanumeric.ext
+    # Pattern: YYYY-MM-DD HH.MM.SS domain.com alphanumeric.ext
+    if [[ "$filename" =~ ^([0-9]{4})-([0-9]{2})-([0-9]{2})\ ([0-9]{2})\.([0-9]{2})\.([0-9]{2})\ ([^\ ]+)\ [^\ ]+\.(.+)$ ]]; then
         local year="${BASH_REMATCH[1]}"
         local month="${BASH_REMATCH[2]}"
         local day="${BASH_REMATCH[3]}"
@@ -122,170 +163,227 @@ format_filename() {
         local minute="${BASH_REMATCH[5]}"
         local second="${BASH_REMATCH[6]}"
         local domain="${BASH_REMATCH[7]}"
+        local extension="${BASH_REMATCH[8]}"
 
-        # Create formatted filename: date-time_domain.ready.ext (replace . with - in time)
-        local formatted_name="${year}-${month}-${day}_${hour}-${minute}-${second}_${domain}.ready.${extension}"
-
-        # Convert to lowercase and replace spaces with underscores
-        formatted_name=$(echo "$formatted_name" | tr '[:upper:]' '[:lower:]' | tr ' ' '_')
-
-        # Create date-based directory structure
-        local target_dir="${year}/${month}/${day}"
-        log_info "Generated target directory: '$target_dir'" >&2
-        log_info "Generated filename: '$formatted_name'" >&2
-
-        echo "${target_dir}/${formatted_name}"
-    else
-        # Fallback for non-screenshot files
-        log_warn "Filename doesn't match Ubuntu Screenshot or Vivaldi Capture pattern, using fallback" >&2
-        local name="${base_name%.*}"
-        local formatted_name=$(echo "$name" | tr '[:upper:]' '[:lower:]' | tr ' ' '_' | sed 's/from_//g')
-        log_info "Fallback filename: '${formatted_name}.ready.${extension}'" >&2
-        echo "${formatted_name}.ready.${extension}"
+        echo "${year}/${month}/${day}/${year}-${month}-${day}_${hour}-${minute}-${second}_${domain}.ready.${extension}"
+        return 0
     fi
+
+    return 1
 }
 
-# Function to check if required tools are available
-check_dependencies() {
-    local missing_tools=()
+# Get target path for file
+get_target_path() {
+    local source_file="$1"
+    local source_dir="$(dirname "$source_file")"
+    local filename="$(basename "$source_file")"
 
-    if ! command -v exiftool &> /dev/null; then
-        missing_tools+=("exiftool")
+    # Skip if already processed (has .ready extension)
+    if [[ "$filename" == *.ready.* ]]; then
+        log_debug "File already processed (has .ready extension): $filename"
+        return 1
     fi
 
-    if ! command -v pngcrush &> /dev/null; then
-        missing_tools+=("pngcrush")
+    # Determine base directory and pattern
+    if [[ "$source_dir" == *"Screenshots"* ]]; then
+        # Ubuntu Screenshot
+        local relative_path
+        if relative_path=$(parse_ubuntu_screenshot "$filename"); then
+            echo "$source_dir/$relative_path"
+            return 0
+        fi
+    elif [[ "$source_dir" == *"Vivaldi Captures"* ]] || [[ "$source_dir" == *"Vivaldi Screenshots"* ]] || [[ "$source_dir" == *".vivaldicaptures"* ]]; then
+        # Vivaldi Capture
+        local relative_path
+        if relative_path=$(parse_vivaldi_capture "$filename"); then
+            echo "$source_dir/$relative_path"
+            return 0
+        fi
     fi
 
-    if [ ${#missing_tools[@]} -gt 0 ]; then
-        log_error "Missing required tools: ${missing_tools[*]}"
-        log_error "Please install the missing tools and try again"
-        exit 1
+    log_debug "No matching pattern found for: $filename in $source_dir"
+    return 1
+}
+
+# Process a single file
+process_file() {
+    local source_file="$1"
+    local debug_mode="${2:-false}"
+
+    # Validate file exists and is readable
+    if [[ ! -f "$source_file" ]] || [[ ! -r "$source_file" ]]; then
+        log_debug "ERROR: File not found or not readable: $source_file"
+        return 1
     fi
+
+    # Check if file is locked
+    if is_locked "$source_file"; then
+        log_debug "File is locked, skipping: $source_file"
+        return 1
+    fi
+
+    # Create lock
+    create_lock "$source_file"
+
+    # Ensure we remove the lock on exit
+    trap "remove_lock '$source_file'" EXIT
+
+    log_debug "Processing file: $source_file"
+
+    # Get target path
+    local target_path
+    if ! target_path=$(get_target_path "$source_file"); then
+        log_debug "Could not determine target path for: $source_file"
+        return 1
+    fi
+
+    # Create target directory
+    local target_dir="$(dirname "$target_path")"
+    if ! mkdir -p "$target_dir"; then
+        log_debug "ERROR: Failed to create target directory: $target_dir"
+        return 1
+    fi
+
+    # Atomic rename to prevent re-triggering incron
+    local temp_file="${source_file}.processing"
+    if ! mv "$source_file" "$temp_file"; then
+        log_debug "ERROR: Failed to rename file for processing: $source_file"
+        return 1
+    fi
+
+    # Determine file type and clean metadata
+    local file_type
+    file_type=$(get_file_type "$temp_file")
+
+    case "$file_type" in
+        jpeg)
+            if ! clean_jpeg_metadata "$temp_file"; then
+                log_debug "WARNING: Metadata cleaning failed for JPEG: $temp_file"
+            fi
+            ;;
+        png)
+            if ! clean_png_metadata "$temp_file"; then
+                log_debug "WARNING: Metadata cleaning failed for PNG: $temp_file"
+            fi
+            ;;
+        *)
+            log_debug "WARNING: Unsupported file type ($file_type): $temp_file"
+            ;;
+    esac
+
+    # Move to final location
+    if mv "$temp_file" "$target_path"; then
+        log_debug "SUCCESS: Processed and moved $source_file -> $target_path"
+
+        if [[ "$debug_mode" == "true" ]]; then
+            echo "Processed: $(basename "$source_file") -> $target_path"
+        fi
+    else
+        log_debug "ERROR: Failed to move to target location: $temp_file -> $target_path"
+        # Try to restore original file
+        mv "$temp_file" "$source_file" 2>/dev/null || true
+        return 1
+    fi
+
+    return 0
+}
+
+# Show help
+show_help() {
+    cat << 'EOF'
+cleanmeta - Automated Image Metadata Cleaner
+
+USAGE:
+    cleanmeta [OPTIONS] FILE
+    cleanmeta --help
+
+DESCRIPTION:
+    Processes image files to remove non-critical metadata and organize them
+    into date-based directory structures. Designed for Ubuntu Screenshots
+    and Vivaldi browser captures.
+
+OPTIONS:
+    --debug     Enable debug mode with verbose output
+    --help      Show this help message
+
+EXAMPLES:
+    cleanmeta image.png
+    cleanmeta --debug "Screenshot from 2025-06-03 18-50-40.png"
+
+SUPPORTED PATTERNS:
+    Ubuntu Screenshots:
+        Screenshot from YYYY-MM-DD HH-MM-SS.ext
+
+    Vivaldi Captures:
+        YYYY-MM-DD HH.MM.SS domain.com alphanumeric.ext
+
+DEPENDENCIES:
+    - libimage-exiftool-perl (for JPEG metadata cleaning)
+    - pngcrush (for PNG optimization and metadata removal)
+
+FILES:
+    Debug log: /tmp/cleanmeta.debug.log
+    Lock files: /tmp/cleanmeta.locks/
+EOF
 }
 
 # Main function
 main() {
-    local file="$1"
+    local debug_mode=false
+    local file_arg=""
 
-    # Log the original argument for debugging
-    log_info "Raw file argument: '$file'"
-
-    # Handle filename with spaces - remove any trailing characters after the extension
-    if [[ "$file" =~ (.+\.(png|jpg|jpeg)).*$ ]]; then
-        file="${BASH_REMATCH[1]}"
-        log_info "Cleaned file path: '$file'"
-    fi
-
-    # Check if the file exists
-    if [ ! -f "$file" ]; then
-        log_error "File does not exist: $file"
-        exit 1
-    fi
-
-    # Ignore files with .ready extensions
-    if [[ "$file" =~ \.ready\.(png|jpg|jpeg)$ ]]; then
-        log_info "Ignoring file with .ready extension: $file"
-        exit 0
-    fi
-
-    # Check dependencies
-    check_dependencies
-
-    # Prevent multiple instances using a lock file
-    if [ -f "$LOCK_FILE" ]; then
-        log_warn "Script is already running. Exiting to prevent infinite loop."
-        exit 0
-    fi
-    touch "$LOCK_FILE"
-    trap "rm -f $LOCK_FILE" EXIT
-
-    # Log the file being processed for debugging
-    log_info "Processing file: $file"
-
-    # Determine file type and clean metadata
-    case "${file,,}" in
-        *.jpg|*.jpeg)
-            clean_jpeg "$file"
-            ;;
-        *.png)
-            clean_png "$file"
-            ;;
-        *)
-            log_warn "Unsupported file type: $file"
-            exit 0
-            ;;
-    esac
-}
-
-# Show usage information
-show_usage() {
-    echo "Usage: $(basename "$0") [OPTIONS] <file>"
-    echo ""
-    echo "Clean non-critical metadata from image files."
-    echo ""
-    echo "Options:"
-    echo "  -h, --help     Show this help message and exit"
-    echo "  -d, --debug    Enable verbose debug output"
-    echo ""
-    echo "Arguments:"
-    echo "  <file>         Path to the image file to process"
-    echo ""
-    echo "Supported formats: PNG, JPG, JPEG"
-    echo ""
-    echo "Examples:"
-    echo "  $(basename "$0") screenshot.png"
-    echo "  $(basename "$0") --debug photo.jpg"
-}
-
-# Execute main function if script is run directly
-if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
-    # Initialize debug log
-    echo "$(date '+%Y-%m-%d %H:%M:%S') [SCRIPT START] $0 $*" >> "$DEBUG_LOG"
-
-    # Parse command line arguments
-    DEBUG_MODE=false
-    FILE_ARG=""
-
+    # Parse arguments
     while [[ $# -gt 0 ]]; do
-        case $1 in
-            -h|--help)
-                show_usage
+        case "$1" in
+            --debug)
+                debug_mode=true
+                shift
+                ;;
+            --help)
+                show_help
                 exit 0
                 ;;
-            -d|--debug)
-                DEBUG_MODE=true
-                ;;
             -*)
-                log_error "Unknown option: $1"
-                show_usage
+                echo "Error: Unknown option $1" >&2
+                echo "Use --help for usage information." >&2
                 exit 1
                 ;;
             *)
-                if [[ -z "$FILE_ARG" ]]; then
-                    FILE_ARG="$1"
-                else
-                    log_error "Too many arguments"
-                    show_usage
+                if [[ -n "$file_arg" ]]; then
+                    echo "Error: Multiple file arguments not supported" >&2
                     exit 1
                 fi
+                file_arg="$1"
+                shift
                 ;;
         esac
-        shift
     done
 
-    if [[ -z "$FILE_ARG" ]]; then
-        log_error "No file specified"
-        show_usage
+    # Check if file argument provided
+    if [[ -z "$file_arg" ]]; then
+        echo "Error: No file specified" >&2
+        echo "Use --help for usage information." >&2
         exit 1
     fi
 
-    if [[ "$DEBUG_MODE" == "true" ]]; then
-        log_info "Debug mode enabled"
-        log_info "Debug log: $DEBUG_LOG"
-        log_info "Raw arguments received: $@"
-        log_info "Processed file argument: '$FILE_ARG'"
-    fi
+    # Initialize
+    cleanup_old_locks
+    check_dependencies
 
-    main "$FILE_ARG"
-fi
+    # Log startup
+    log_debug "=== cleanmeta.sh started (PID: $$) ==="
+    log_debug "File: $file_arg"
+    log_debug "Debug mode: $debug_mode"
+
+    # Process the file
+    if process_file "$file_arg" "$debug_mode"; then
+        log_debug "=== Processing completed successfully ==="
+        exit 0
+    else
+        log_debug "=== Processing failed ==="
+        exit 1
+    fi
+}
+
+# Run main function with all arguments
+main "$@"
