@@ -1,0 +1,92 @@
+= imgtag
+:toc:
+
+AI-powered image tagging, metadata enrichment, and smart renaming utility.
+
+[#overview]
+== Overview
+
+`imgtag` analyzes images using Ollama's AI models to automatically:
+
+1. Generate descriptive filenames based on image content
+2. Create meaningful descriptions for each image
+3. Extract relevant keywords/tags from the image
+4. Write metadata to image files for better organization
+5. Rename files based on their content
+
+[#features]
+== Features
+
+* *AI-powered analysis* - Uses Ollama's AI models for image understanding
+* *Metadata generation* - Automatically creates and embeds descriptive metadata
+* *Smart tagging* - Extracts relevant keywords from image content
+* *Intelligent naming* - Suggests content-based filenames
+* *Batch processing* - Handles entire directories of images
+* *Preview mode* - Shows suggestions before applying changes
+* *Safety features* - Prevents accidental overwrites
+
+[#installation]
+== Installation
+
+[source,bash]
+----
+./install.sh
+----
+
+This will:
+
+* Install the script to your `~/.local/bin/` directory
+* Make the command available in your terminal as `imgtag`
+
+[#dependencies]
+== Dependencies
+
+* link:https://ollama.ai/[Ollama] - Local AI model runner
+* link:https://exiftool.org/[ExifTool] - For reading/writing image metadata
+* Python 3.6+ with packages:
+** PIL/Pillow (image processing)
+** argparse, base64, os, re, sys (standard libraries)
+
+[#usage]
+== Usage
+
+=== Basic Usage
+
+[source,bash]
+----
+# Analyze a single image
+imgtag path/to/image.jpg
+
+# Process an entire directory of images
+imgtag path/to/image/directory
+----
+
+=== Writing Changes
+
+[source,bash]
+----
+# Prompt before writing metadata and renaming
+imgtag -w path/to/image.jpg
+
+# Force metadata writing and renaming without confirmation
+imgtag -f path/to/image.jpg
+----
+
+[#supported-formats]
+== Supported Image Formats
+
+JPEG, PNG, TIFF, WebP, HEIC/HEIF, AVIF, and many RAW formats (DNG, CR2, NEF, etc.)
+
+[#options]
+== Options
+
+[cols="1,4"]
+|===
+|Option |Description
+
+|`-w`, `--write`
+|Write metadata and rename file(s) with confirmation
+
+|`-f`, `--force`
+|Force write changes without confirmation (use with caution!)
+|===

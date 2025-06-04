@@ -1,0 +1,43 @@
+= carbon.now.sh Configuration
+:toc:
+
+A configuration repository for carbon.now.sh, the tool for creating beautiful images of source code with customizable themes and formatting options.
+
+[#overview]
+== Overview
+
+This directory stores configuration settings for https://carbon.now.sh/[carbon.now.sh], a tool for creating and sharing beautiful images of your source code.
+
+[#features]
+== Features
+
+* *Theme customization* - Defines preferred color theme
+* *Window controls* - Sets default window control style
+* *Typography* - Specifies font family and size preferences
+* *Layout* - Configures background color and padding
+* *Visual preferences* - Other formatting and display options
+
+[#usage]
+== Usage
+
+To use this configuration:
+
+1. Visit https://carbon.now.sh/[carbon.now.sh]
+2. Import `carbon-config.json`
+3. Write or paste your code/text
+4. Export the styled image
+
+[#files]
+== Files
+
+----
+carbon-config.json   # Main configuration file
+README.adoc         # This documentation
+----
+
+[#notes]
+== Notes
+
+* Configuration can be further customized after import
+* Multiple themes can be saved as separate JSON files
+* Settings are preserved between sessions when using the same browser
